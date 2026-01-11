@@ -1,8 +1,8 @@
 import { useState, useCallback, useEffect } from 'react';
-import { PickerButton } from './components/PickerButton';
 import { MarkdownViewer } from './components/MarkdownViewer';
 import { SearchPanel } from './components/SearchPanel';
 import { RecentFilesList } from './components/RecentFilesList';
+import { FABMenu } from './components/FABMenu';
 import { useGoogleDriveSearch } from './hooks/useGoogleDriveSearch';
 import {
   getFileHistory,
@@ -70,8 +70,15 @@ function App() {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [fileHistory, setFileHistory] = useState<FileHistoryItem[]>([]);
 
-  // Google Drive Search フック（履歴からのファイル読み込みに使用）
-  const { fetchFileContent } = useGoogleDriveSearch();
+  // Google Drive Search フック
+  const { 
+    fetchFileContent, 
+    userInfo, 
+    isAuthenticated, 
+    isApiLoaded,
+    authenticate,
+    logout,
+  } = useGoogleDriveSearch();
 
   // 環境変数チェック
   const hasCredentials = Boolean(
@@ -92,22 +99,6 @@ function App() {
     const history = getFileHistory();
     setFileHistory(history);
   }, []);
-
-  const handleFileSelect = useCallback(
-    (file: google.picker.PickerDocument | null, content: string | null) => {
-      if (file && content) {
-        setMarkdownContent(content);
-        setFileName(file.name);
-        setShowSample(false);
-
-        // 履歴に保存
-        addFileToHistory({ id: file.id, name: file.name });
-        const updatedHistory = getFileHistory();
-        setFileHistory(updatedHistory);
-      }
-    },
-    []
-  );
 
   const handleShowSample = () => {
     setMarkdownContent(SAMPLE_MARKDOWN);
@@ -189,28 +180,6 @@ function App() {
             />
             MD Viewer
           </h1>
-          <div className="header-actions">
-            <button
-              className="search-trigger-button"
-              onClick={() => setIsSearchOpen(true)}
-              disabled={!hasCredentials}
-              title="検索 (Ctrl+K)"
-            >
-              <svg
-                className="search-trigger-icon"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-              >
-                <circle cx="11" cy="11" r="8" />
-                <path d="M21 21l-4.35-4.35" />
-              </svg>
-              <span className="search-trigger-text">検索</span>
-              <kbd className="search-trigger-kbd">⌘K</kbd>
-            </button>
-            <PickerButton onFileSelect={handleFileSelect} />
-          </div>
         </div>
       </header>
 
@@ -256,6 +225,15 @@ function App() {
       <footer className="app-footer">
         <p>MD Viewer • Google Drive Markdown Preview</p>
       </footer>
+
+      <FABMenu
+        onSearchClick={() => setIsSearchOpen(true)}
+        userInfo={userInfo}
+        isAuthenticated={isAuthenticated}
+        isApiLoaded={isApiLoaded}
+        onLogin={authenticate}
+        onLogout={logout}
+      />
 
       <SearchPanel
         isOpen={isSearchOpen}
