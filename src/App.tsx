@@ -1,6 +1,7 @@
 import { useState, useCallback, useEffect } from 'react';
 import { PickerButton } from './components/PickerButton';
 import { MarkdownViewer } from './components/MarkdownViewer';
+import { SearchPanel } from './components/SearchPanel';
 import './App.css';
 
 // サンプル Markdown（API キーが未設定の場合に表示）
@@ -58,6 +59,7 @@ function App() {
   const [markdownContent, setMarkdownContent] = useState<string | null>(null);
   const [fileName, setFileName] = useState<string | null>(null);
   const [showSample, setShowSample] = useState(false);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
 
   // 環境変数チェック
   const hasCredentials = Boolean(
@@ -90,6 +92,28 @@ function App() {
     setShowSample(false);
   };
 
+  const handleSearchFileSelect = useCallback(
+    (file: DriveFile, content: string) => {
+      setMarkdownContent(content);
+      setFileName(file.name);
+      setShowSample(false);
+    },
+    []
+  );
+
+  // Ctrl/Cmd + K で検索パネルを開く
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        setIsSearchOpen(true);
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
   return (
     <div className="app">
       <header className="app-header">
@@ -98,7 +122,28 @@ function App() {
             <span className="logo-icon">📄</span>
             MD Viewer
           </h1>
-          <PickerButton onFileSelect={handleFileSelect} />
+          <div className="header-actions">
+            <button
+              className="search-trigger-button"
+              onClick={() => setIsSearchOpen(true)}
+              disabled={!hasCredentials}
+              title="検索 (Ctrl+K)"
+            >
+              <svg
+                className="search-trigger-icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
+                <circle cx="11" cy="11" r="8" />
+                <path d="M21 21l-4.35-4.35" />
+              </svg>
+              <span className="search-trigger-text">検索</span>
+              <kbd className="search-trigger-kbd">⌘K</kbd>
+            </button>
+            <PickerButton onFileSelect={handleFileSelect} />
+          </div>
         </div>
       </header>
 
@@ -132,6 +177,12 @@ function App() {
       <footer className="app-footer">
         <p>MD Viewer • Google Drive Markdown Preview</p>
       </footer>
+
+      <SearchPanel
+        isOpen={isSearchOpen}
+        onClose={() => setIsSearchOpen(false)}
+        onFileSelect={handleSearchFileSelect}
+      />
     </div>
   );
 }
