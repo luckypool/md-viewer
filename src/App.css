@@ -323,8 +323,12 @@ body {
   color: var(--color-accent);
   font-weight: 500;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: var(--spacing-sm);
+  /* 長いファイル名の折り返し対応 */
+  word-break: break-word;
+  overflow-wrap: break-word;
+  line-height: 1.4;
 }
 
 .file-title::before {
