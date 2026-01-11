@@ -110,6 +110,26 @@ declare namespace google {
   }
 }
 
+// Google Drive API ファイル検索結果の型
+interface DriveFile {
+  id: string;
+  name: string;
+  mimeType: string;
+  modifiedTime?: string;
+  size?: string;
+  iconLink?: string;
+  webViewLink?: string;
+  owners?: Array<{
+    displayName: string;
+    emailAddress: string;
+  }>;
+}
+
+interface DriveFileListResponse {
+  files: DriveFile[];
+  nextPageToken?: string;
+}
+
 interface Window {
   google: typeof google;
   gapi: {
@@ -121,6 +141,13 @@ interface Window {
           get: (params: { fileId: string; alt?: string }) => {
             then: (callback: (response: { body: string }) => void) => void;
           };
+          list: (params: {
+            q: string;
+            fields?: string;
+            pageSize?: number;
+            pageToken?: string;
+            orderBy?: string;
+          }) => Promise<{ result: DriveFileListResponse }>;
         };
       };
     };
