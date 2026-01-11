@@ -15,6 +15,10 @@ const MARKDOWN_MIME_TYPES = [
   'text/plain',
 ];
 
+// localStorage のキー
+const TOKEN_KEY = 'googleDriveAccessToken';
+const TOKEN_EXPIRY_KEY = 'googleDriveTokenExpiry';
+
 interface UseGoogleDriveSearchReturn {
   isLoading: boolean;
   isApiLoaded: boolean;
@@ -23,6 +27,7 @@ interface UseGoogleDriveSearchReturn {
   results: DriveFile[];
   search: (query: string) => Promise<void>;
   authenticate: () => void;
+  logout: () => void;
   fetchFileContent: (fileId: string, signal?: AbortSignal) => Promise<string | null>;
   clearResults: () => void;
 }
@@ -30,6 +35,45 @@ interface UseGoogleDriveSearchReturn {
 // 検索クエリをサニタイズ（シングルクォートをエスケープ）
 function sanitizeQuery(query: string): string {
   return query.replace(/'/g, "\\'");
+}
+
+// localStorageからトークンを復元する関数
+function restoreToken(): { token: string; expiry: number } | null {
+  try {
+    const token = localStorage.getItem(TOKEN_KEY);
+    const expiryStr = localStorage.getItem(TOKEN_EXPIRY_KEY);
+    if (token && expiryStr) {
+      const expiry = Number(expiryStr);
+      // 有効期限が残っている場合のみ返す（5分のマージンを持つ）
+      if (Date.now() < expiry - 5 * 60 * 1000) {
+        return { token, expiry };
+      }
+    }
+  } catch {
+    // localStorage へのアクセスエラーは無視
+  }
+  return null;
+}
+
+// localStorageにトークンを保存する関数
+function saveToken(token: string, expiresIn: number): void {
+  try {
+    const expiry = Date.now() + expiresIn * 1000;
+    localStorage.setItem(TOKEN_KEY, token);
+    localStorage.setItem(TOKEN_EXPIRY_KEY, String(expiry));
+  } catch {
+    // localStorage へのアクセスエラーは無視
+  }
+}
+
+// localStorageからトークンを削除する関数
+function clearStoredToken(): void {
+  try {
+    localStorage.removeItem(TOKEN_KEY);
+    localStorage.removeItem(TOKEN_EXPIRY_KEY);
+  } catch {
+    // localStorage へのアクセスエラーは無視
+  }
 }
 
 export function useGoogleDriveSearch(): UseGoogleDriveSearchReturn {
@@ -43,6 +87,15 @@ export function useGoogleDriveSearch(): UseGoogleDriveSearchReturn {
   const tokenClientRef = useRef<google.accounts.oauth2.TokenClient | null>(null);
   const pickerInited = useRef(false);
   const gisInited = useRef(false);
+
+  // 初期化時にlocalStorageからトークンを復元
+  useEffect(() => {
+    const stored = restoreToken();
+    if (stored) {
+      accessTokenRef.current = stored.token;
+      setIsAuthenticated(true);
+    }
+  }, []);
 
   // Google API スクリプトを動的に読み込む
   useEffect(() => {
@@ -105,12 +158,23 @@ export function useGoogleDriveSearch(): UseGoogleDriveSearchReturn {
           return;
         }
         accessTokenRef.current = response.access_token;
+        // トークンをlocalStorageに保存（expires_inは秒単位）
+        saveToken(response.access_token, response.expires_in || 3600);
         setIsAuthenticated(true);
         setError(null);
       };
       tokenClientRef.current.requestAccessToken({ prompt: '' });
     }
   }, [isApiLoaded]);
+
+  // ログアウト（トークンをクリア）
+  const logout = useCallback(() => {
+    accessTokenRef.current = null;
+    setIsAuthenticated(false);
+    setResults([]);
+    setError(null);
+    clearStoredToken();
+  }, []);
 
   // Markdown ファイルを検索
   const search = useCallback(async (query: string) => {
@@ -221,6 +285,7 @@ export function useGoogleDriveSearch(): UseGoogleDriveSearchReturn {
     results,
     search,
     authenticate,
+    logout,
     fetchFileContent,
     clearResults,
   };

@@ -338,6 +338,10 @@ body {
   border-radius: var(--radius-lg);
   padding: var(--spacing-xl);
   box-shadow: var(--shadow-md);
+  /* 長いURLの折り返し対応 */
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+  word-break: break-word;
 }
 
 /* Markdown Typography */
@@ -388,6 +392,7 @@ body {
   text-decoration: none;
   border-bottom: 1px solid transparent;
   transition: border-color var(--transition-fast);
+  word-break: break-all;
 }
 
 .markdown-content a:hover {
@@ -685,6 +690,33 @@ body {
 }
 
 .search-close-button svg {
+  width: 18px;
+  height: 18px;
+}
+
+/* ============================================
+   Search Logout Button
+   ============================================ */
+.search-logout-button {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-sm);
+  color: var(--color-text-muted);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.search-logout-button:hover {
+  background: rgba(248, 113, 113, 0.15);
+  color: var(--color-error);
+}
+
+.search-logout-button svg {
   width: 18px;
   height: 18px;
 }
