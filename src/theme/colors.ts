@@ -27,6 +27,7 @@ export const colors = {
   // Status colors
   error: '#f87171',
   warning: '#fbbf24',
+  warningMuted: 'rgba(251, 191, 36, 0.15)',
   success: '#10b981',
 
   // Overlay

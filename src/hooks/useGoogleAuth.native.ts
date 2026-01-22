@@ -75,6 +75,7 @@ export interface UseGoogleAuthReturn {
   isLoading: boolean;
   isApiLoaded: boolean;
   isAuthenticated: boolean;
+  accessToken: string | null;
   error: string | null;
   results: DriveFile[];
   userInfo: UserInfo | null;
@@ -255,6 +256,7 @@ export function useGoogleAuth(): UseGoogleAuthReturn {
     isLoading,
     isApiLoaded,
     isAuthenticated,
+    accessToken: accessTokenRef.current,
     error,
     results,
     userInfo,

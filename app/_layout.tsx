@@ -64,6 +64,13 @@ export default function RootLayout() {
             animation: 'fade',
           }}
         />
+        <Stack.Screen
+          name="browse"
+          options={{
+            presentation: 'card',
+            animation: 'slide_from_right',
+          }}
+        />
       </Stack>
     </View>
   );
