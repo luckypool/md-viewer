@@ -18,6 +18,7 @@ export interface DriveFile {
     displayName: string;
     emailAddress: string;
   }>;
+  parents?: string[];
 }
 
 /**

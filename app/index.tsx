@@ -75,6 +75,12 @@ export default function HomeScreen() {
     router.push('/search');
   }, []);
 
+  // Google Drive フォルダを参照
+  const handleOpenBrowse = useCallback(() => {
+    setIsFabOpen(false);
+    router.push('/browse');
+  }, []);
+
   // 履歴からファイルを開く
   const handleOpenHistoryFile = useCallback((item: FileHistoryItem) => {
     router.push({
@@ -240,8 +246,12 @@ export default function HomeScreen() {
                 <Ionicons name="search" size={20} color={colors.textSecondary} />
                 <Text style={styles.fabMenuText}>Drive を検索</Text>
               </TouchableOpacity>
+              <TouchableOpacity style={styles.fabMenuItem} onPress={handleOpenBrowse}>
+                <Ionicons name="folder" size={20} color={colors.textSecondary} />
+                <Text style={styles.fabMenuText}>フォルダを参照</Text>
+              </TouchableOpacity>
               <TouchableOpacity style={styles.fabMenuItem} onPress={handleLocalFile}>
-                <Ionicons name="folder-outline" size={20} color={colors.textSecondary} />
+                <Ionicons name="document-outline" size={20} color={colors.textSecondary} />
                 <Text style={styles.fabMenuText}>ローカルファイル</Text>
               </TouchableOpacity>
               <TouchableOpacity
