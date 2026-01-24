@@ -17,11 +17,12 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { colors, spacing, borderRadius, fontSize, fontWeight } from '../src/theme';
-import { useGoogleAuth } from '../src/hooks';
+import { spacing, borderRadius, fontSize, fontWeight } from '../src/theme';
+import { useGoogleAuth, useTheme } from '../src/hooks';
 import type { DriveFile } from '../src/types';
 
 export default function SearchScreen() {
+  const { colors } = useTheme();
   const {
     isLoading,
     isAuthenticated,
@@ -101,21 +102,21 @@ export default function SearchScreen() {
         onPress={() => handleSelectFile(item)}
         activeOpacity={0.7}
       >
-        <View style={styles.resultIcon}>
+        <View style={[styles.resultIcon, { backgroundColor: colors.accentMuted }]}>
           <Ionicons name="document-text-outline" size={20} color={colors.accent} />
         </View>
         <View style={styles.resultContent}>
-          <Text style={styles.resultName} numberOfLines={1}>
+          <Text style={[styles.resultName, { color: colors.textPrimary }]} numberOfLines={1}>
             {item.name}
           </Text>
           <View style={styles.resultMeta}>
             {item.modifiedTime && (
-              <Text style={styles.resultMetaText}>
+              <Text style={[styles.resultMetaText, { color: colors.textMuted }]}>
                 {formatRelativeTime(item.modifiedTime)}
               </Text>
             )}
             {item.size && (
-              <Text style={styles.resultMetaText}>
+              <Text style={[styles.resultMetaText, { color: colors.textMuted }]}>
                 {formatFileSize(item.size)}
               </Text>
             )}
@@ -124,22 +125,22 @@ export default function SearchScreen() {
         <Ionicons name="arrow-forward" size={18} color={colors.textMuted} />
       </TouchableOpacity>
     ),
-    [handleSelectFile]
+    [handleSelectFile, colors]
   );
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.bgSecondary }]}>
       <KeyboardAvoidingView
         style={styles.keyboardView}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
         {/* Search Header */}
-        <View style={styles.header}>
+        <View style={[styles.header, { borderBottomColor: colors.border }]}>
           <View style={styles.searchInputWrapper}>
             <Ionicons name="search" size={20} color={colors.textMuted} />
             <TextInput
               ref={inputRef}
-              style={styles.searchInput}
+              style={[styles.searchInput, { color: colors.textPrimary }]}
               placeholder="Search Google Drive..."
               placeholderTextColor={colors.textMuted}
               value={query}
@@ -160,12 +161,12 @@ export default function SearchScreen() {
         <View style={styles.body}>
           {!isAuthenticated ? (
             <View style={styles.authPrompt}>
-              <Text style={styles.authText}>
+              <Text style={[styles.authText, { color: colors.textSecondary }]}>
                 Please sign in to search{'\n'}Google Drive
               </Text>
-              <TouchableOpacity style={styles.authButton} onPress={authenticate}>
+              <TouchableOpacity style={[styles.authButton, { backgroundColor: colors.accent }]} onPress={authenticate}>
                 <Ionicons name="logo-google" size={20} color={colors.bgPrimary} />
-                <Text style={styles.authButtonText}>Sign in with Google</Text>
+                <Text style={[styles.authButtonText, { color: colors.bgPrimary }]}>Sign in with Google</Text>
               </TouchableOpacity>
             </View>
           ) : query.length === 0 ? (
@@ -173,22 +174,22 @@ export default function SearchScreen() {
               <View style={styles.emptyIcon}>
                 <Ionicons name="search-outline" size={48} color={colors.textMuted} />
               </View>
-              <Text style={styles.emptyTitle}>Search Markdown Files</Text>
-              <Text style={styles.emptyHint}>
+              <Text style={[styles.emptyTitle, { color: colors.textSecondary }]}>Search Markdown Files</Text>
+              <Text style={[styles.emptyHint, { color: colors.textMuted }]}>
                 Type at least 2 characters to start searching
               </Text>
             </View>
           ) : query.length < 2 ? (
             <View style={styles.messageContainer}>
-              <Text style={styles.messageText}>Type at least 2 characters</Text>
+              <Text style={[styles.messageText, { color: colors.textSecondary }]}>Type at least 2 characters</Text>
             </View>
           ) : results.length === 0 && !isLoading ? (
             <View style={styles.emptyState}>
               <View style={styles.emptyIcon}>
                 <Ionicons name="document-outline" size={48} color={colors.textMuted} />
               </View>
-              <Text style={styles.emptyTitle}>No Results Found</Text>
-              <Text style={styles.emptyHint}>
+              <Text style={[styles.emptyTitle, { color: colors.textSecondary }]}>No Results Found</Text>
+              <Text style={[styles.emptyHint, { color: colors.textMuted }]}>
                 Try searching with different keywords
               </Text>
             </View>
@@ -201,7 +202,7 @@ export default function SearchScreen() {
               showsVerticalScrollIndicator={false}
               ListHeaderComponent={
                 results.length > 0 ? (
-                  <Text style={styles.resultsHeader}>
+                  <Text style={[styles.resultsHeader, { color: colors.textMuted }]}>
                     {results.length} {results.length === 1 ? 'result' : 'results'}
                   </Text>
                 ) : null
@@ -217,7 +218,6 @@ export default function SearchScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.bgSecondary,
   },
   keyboardView: {
     flex: 1,
@@ -230,7 +230,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.md,
     borderBottomWidth: 1,
-    borderBottomColor: colors.border,
     gap: spacing.md,
   },
   searchInputWrapper: {
@@ -242,7 +241,6 @@ const styles = StyleSheet.create({
   searchInput: {
     flex: 1,
     fontSize: fontSize.lg,
-    color: colors.textPrimary,
     paddingVertical: spacing.xs,
   },
   closeButton: {
@@ -268,7 +266,6 @@ const styles = StyleSheet.create({
   },
   authText: {
     fontSize: fontSize.base,
-    color: colors.textSecondary,
     textAlign: 'center',
     lineHeight: fontSize.base * 1.5,
   },
@@ -276,7 +273,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.sm,
-    backgroundColor: colors.accent,
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.sm,
     borderRadius: borderRadius.md,
@@ -284,7 +280,6 @@ const styles = StyleSheet.create({
   authButtonText: {
     fontSize: fontSize.base,
     fontWeight: fontWeight.semibold,
-    color: colors.bgPrimary,
   },
 
   // Empty State
@@ -299,12 +294,10 @@ const styles = StyleSheet.create({
   },
   emptyTitle: {
     fontSize: fontSize.lg,
-    color: colors.textSecondary,
     marginBottom: spacing.xs,
   },
   emptyHint: {
     fontSize: fontSize.sm,
-    color: colors.textMuted,
   },
 
   // Message
@@ -316,7 +309,6 @@ const styles = StyleSheet.create({
   },
   messageText: {
     fontSize: fontSize.base,
-    color: colors.textSecondary,
   },
 
   // Results
@@ -325,7 +317,6 @@ const styles = StyleSheet.create({
   },
   resultsHeader: {
     fontSize: fontSize.sm,
-    color: colors.textMuted,
     paddingHorizontal: spacing.sm,
     paddingVertical: spacing.xs,
   },
@@ -342,7 +333,6 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: borderRadius.sm,
-    backgroundColor: colors.accentMuted,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -352,7 +342,6 @@ const styles = StyleSheet.create({
   resultName: {
     fontSize: fontSize.base,
     fontWeight: fontWeight.medium,
-    color: colors.textPrimary,
   },
   resultMeta: {
     flexDirection: 'row',
@@ -361,6 +350,5 @@ const styles = StyleSheet.create({
   },
   resultMetaText: {
     fontSize: fontSize.sm,
-    color: colors.textMuted,
   },
 });

@@ -5,6 +5,9 @@
 export { colors, withOpacity } from './colors';
 export type { ColorKey } from './colors';
 
+export { lightColors } from './lightColors';
+export type { LightColorKey } from './lightColors';
+
 export {
   spacing,
   borderRadius,

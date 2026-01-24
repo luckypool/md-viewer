@@ -7,7 +7,8 @@ import {
   TextStyle,
   ActivityIndicator,
 } from 'react-native';
-import { colors, spacing, borderRadius, fontSize, fontWeight } from '../../theme';
+import { spacing, borderRadius, fontSize, fontWeight } from '../../theme';
+import { useTheme } from '../../hooks/useTheme';
 
 type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger';
 type ButtonSize = 'sm' | 'md' | 'lg';
@@ -35,7 +36,24 @@ export function Button({
   textStyle,
   icon,
 }: ButtonProps) {
+  const { colors } = useTheme();
   const isDisabled = disabled || loading;
+
+  const variantStyles: Record<ButtonVariant, ViewStyle> = {
+    primary: { backgroundColor: colors.accent },
+    secondary: { backgroundColor: colors.bgTertiary, borderWidth: 1, borderColor: colors.border },
+    outline: { backgroundColor: 'transparent', borderWidth: 1, borderColor: colors.accent },
+    ghost: { backgroundColor: 'transparent' },
+    danger: { backgroundColor: colors.error },
+  };
+
+  const textVariantStyles: Record<ButtonVariant, TextStyle> = {
+    primary: { color: colors.bgPrimary },
+    secondary: { color: colors.textPrimary },
+    outline: { color: colors.accent },
+    ghost: { color: colors.textPrimary },
+    danger: { color: colors.textPrimary },
+  };
 
   return (
     <TouchableOpacity
@@ -43,7 +61,7 @@ export function Button({
       disabled={isDisabled}
       style={[
         styles.base,
-        styles[variant],
+        variantStyles[variant],
         styles[`size_${size}`],
         isDisabled && styles.disabled,
         style,
@@ -61,7 +79,7 @@ export function Button({
           <Text
             style={[
               styles.text,
-              styles[`text_${variant}`],
+              textVariantStyles[variant],
               styles[`text_${size}`],
               textStyle,
             ]}
@@ -81,27 +99,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: spacing.sm,
     borderRadius: borderRadius.md,
-  },
-
-  // Variants
-  primary: {
-    backgroundColor: colors.accent,
-  },
-  secondary: {
-    backgroundColor: colors.bgTertiary,
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  outline: {
-    backgroundColor: 'transparent',
-    borderWidth: 1,
-    borderColor: colors.accent,
-  },
-  ghost: {
-    backgroundColor: 'transparent',
-  },
-  danger: {
-    backgroundColor: colors.error,
   },
 
   // Sizes
@@ -126,21 +123,6 @@ const styles = StyleSheet.create({
   // Text styles
   text: {
     fontWeight: fontWeight.semibold,
-  },
-  text_primary: {
-    color: colors.bgPrimary,
-  },
-  text_secondary: {
-    color: colors.textPrimary,
-  },
-  text_outline: {
-    color: colors.accent,
-  },
-  text_ghost: {
-    color: colors.textPrimary,
-  },
-  text_danger: {
-    color: colors.textPrimary,
   },
 
   // Text sizes

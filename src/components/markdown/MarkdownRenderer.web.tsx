@@ -1,34 +1,56 @@
 /**
- * Markdown レンダラー - Web 版
- * react-markdown + remark-gfm を使用
+ * Markdown Renderer - Web version
+ * react-markdown + remark-gfm with theme support
  */
 
-import React, { useId, useRef, useEffect, useState } from 'react';
-import { View, StyleSheet, Platform } from 'react-native';
+import React, { useId, useRef, useEffect, useState, useMemo } from 'react';
+import { View, StyleSheet } from 'react-native';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import mermaid from 'mermaid';
 
-// Mermaid 初期化
-mermaid.initialize({
-  startOnLoad: false,
-  theme: 'dark',
-  themeVariables: {
-    primaryColor: '#10b981',
-    primaryTextColor: '#e2e8f0',
-    primaryBorderColor: '#1e2e28',
-    lineColor: '#64748b',
-    secondaryColor: '#1a2420',
-    tertiaryColor: '#111915',
-  },
-});
+import type { Components } from 'react-markdown';
+import type { MarkdownRendererProps } from '../../types/markdown';
+import { spacing, borderRadius, fontSize } from '../../theme';
+import { useTheme } from '../../hooks/useTheme';
+import type { ThemeMode, ThemeColors } from '../../contexts/ThemeContext';
 
-// Mermaid ダイアグラムコンポーネント
-function MermaidDiagram({ chart }: { chart: string }) {
+// Initialize Mermaid with a theme
+const initializeMermaid = (mode: ThemeMode) => {
+  const isDark = mode === 'dark';
+  mermaid.initialize({
+    startOnLoad: false,
+    theme: isDark ? 'dark' : 'default',
+    themeVariables: isDark
+      ? {
+          primaryColor: '#10b981',
+          primaryTextColor: '#e2e8f0',
+          primaryBorderColor: '#1e2e28',
+          lineColor: '#64748b',
+          secondaryColor: '#1a2420',
+          tertiaryColor: '#111915',
+        }
+      : {
+          primaryColor: '#10b981',
+          primaryTextColor: '#1a2e25',
+          primaryBorderColor: '#e5e7eb',
+          lineColor: '#6b7280',
+          secondaryColor: '#f0f4f3',
+          tertiaryColor: '#f8faf9',
+        },
+  });
+};
+
+// Mermaid Diagram Component
+function MermaidDiagram({ chart, themeMode }: { chart: string; themeMode: ThemeMode }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [error, setError] = useState<string | null>(null);
   const id = useId().replace(/:/g, '-');
+
+  useEffect(() => {
+    initializeMermaid(themeMode);
+  }, [themeMode]);
 
   useEffect(() => {
     const renderDiagram = async () => {
@@ -42,19 +64,15 @@ function MermaidDiagram({ chart }: { chart: string }) {
       }
     };
     renderDiagram();
-  }, [chart, id]);
+  }, [chart, id, themeMode]);
 
   if (error) {
-    return (
-      <div className="mermaid-error">
-        Mermaid Error: {error}
-      </div>
-    );
+    return <div className="mermaid-error">Mermaid Error: {error}</div>;
   }
   return <div ref={containerRef} className="mermaid-diagram" />;
 }
 
-// GitHub ダークモード風のカスタムテーマ
+// GitHub Dark Theme for syntax highlighting
 const githubDarkTheme: { [key: string]: React.CSSProperties } = {
   'code[class*="language-"]': {
     color: '#e6edf3',
@@ -98,12 +116,54 @@ const githubDarkTheme: { [key: string]: React.CSSProperties } = {
   regex: { color: '#a5d6ff' },
   important: { color: '#ff7b72', fontWeight: 'bold' },
 };
-import type { Components } from 'react-markdown';
-import type { MarkdownRendererProps } from '../../types/markdown';
-import { colors, spacing, borderRadius, fontSize } from '../../theme';
 
-// Web 専用のスタイル
-const webStyles = `
+// GitHub Light Theme for syntax highlighting
+const githubLightTheme: { [key: string]: React.CSSProperties } = {
+  'code[class*="language-"]': {
+    color: '#24292f',
+    fontFamily: 'ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace',
+    fontSize: '0.875rem',
+    lineHeight: '1.5',
+  },
+  'pre[class*="language-"]': {
+    color: '#24292f',
+    fontFamily: 'ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace',
+    fontSize: '0.875rem',
+    lineHeight: '1.5',
+  },
+  comment: { color: '#6e7781' },
+  prolog: { color: '#6e7781' },
+  doctype: { color: '#6e7781' },
+  cdata: { color: '#6e7781' },
+  punctuation: { color: '#24292f' },
+  property: { color: '#0550ae' },
+  tag: { color: '#116329' },
+  boolean: { color: '#0550ae' },
+  number: { color: '#0550ae' },
+  constant: { color: '#0550ae' },
+  symbol: { color: '#0550ae' },
+  deleted: { color: '#82071e' },
+  selector: { color: '#116329' },
+  'attr-name': { color: '#0550ae' },
+  string: { color: '#0a3069' },
+  char: { color: '#0a3069' },
+  builtin: { color: '#953800' },
+  inserted: { color: '#116329' },
+  operator: { color: '#cf222e' },
+  entity: { color: '#953800' },
+  url: { color: '#0a3069' },
+  variable: { color: '#953800' },
+  atrule: { color: '#0550ae' },
+  'attr-value': { color: '#0a3069' },
+  function: { color: '#8250df' },
+  'class-name': { color: '#953800' },
+  keyword: { color: '#cf222e' },
+  regex: { color: '#0a3069' },
+  important: { color: '#cf222e', fontWeight: 'bold' },
+};
+
+// Generate CSS styles based on theme
+const generateWebStyles = (colors: ThemeColors, isDark: boolean) => `
   .markdown-content {
     color: ${colors.textSecondary};
     font-size: ${fontSize.base}px;
@@ -186,20 +246,20 @@ const webStyles = `
     font-size: 0.85em;
   }
 
-  /* Fence コードブロック - シンタックスハイライト付き */
+  /* Fence code block - with syntax highlighting */
   .markdown-content .fence-block-wrapper {
     margin: ${spacing.md}px 0;
-    border: 1px solid #30363d;
+    border: 1px solid ${isDark ? '#30363d' : '#d0d7de'};
     border-radius: 6px;
     overflow: hidden;
   }
 
   .markdown-content .fence-block-language {
-    background: #161b22;
-    border-bottom: 1px solid #30363d;
+    background: ${isDark ? '#161b22' : '#f6f8fa'};
+    border-bottom: 1px solid ${isDark ? '#30363d' : '#d0d7de'};
     padding: 8px 16px;
     font-size: 0.75rem;
-    color: #8b949e;
+    color: ${isDark ? '#8b949e' : '#57606a'};
     font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
   }
 
@@ -215,7 +275,7 @@ const webStyles = `
     background: transparent !important;
   }
 
-  /* Indented コードブロック (4スペース) - シンプルなスタイル */
+  /* Indented code block (4 spaces) - simple style */
   .markdown-content .indented-code-block {
     margin: ${spacing.md}px 0;
     padding: ${spacing.md}px;
@@ -270,7 +330,7 @@ const webStyles = `
   }
 
   .markdown-content tr:nth-child(even) td {
-    background: rgba(255, 255, 255, 0.02);
+    background: ${isDark ? 'rgba(255, 255, 255, 0.02)' : 'rgba(0, 0, 0, 0.02)'};
   }
 
   .markdown-content img {
@@ -308,109 +368,105 @@ const webStyles = `
   }
 `;
 
-export function MarkdownRenderer({ content, onLinkPress }: MarkdownRendererProps) {
-  const id = useId().replace(/:/g, '-');
+interface ExtendedMarkdownRendererProps extends MarkdownRendererProps {
+  themeMode?: ThemeMode;
+}
 
-  const components: Components = {
-    // pre タグ: fence/indented code block のラッパー
-    pre({ children, node, ...props }) {
-      // children が code 要素かチェック（React要素であればOK）
-      const child = React.Children.toArray(children)[0];
-      if (React.isValidElement(child)) {
-        const codeProps = child.props as { className?: string; children?: React.ReactNode };
-        const className = codeProps.className || '';
-        const match = /language-(\w+)/.exec(className);
-        const language = match ? match[1] : null;
-        const codeContent = String(codeProps.children || '').replace(/\n$/, '');
+export function MarkdownRenderer({ content, onLinkPress, themeMode: propThemeMode }: ExtendedMarkdownRendererProps) {
+  const { colors, mode: contextMode } = useTheme();
+  const themeMode = propThemeMode ?? contextMode;
+  const isDark = themeMode === 'dark';
 
-        // Mermaid ダイアグラムの場合
-        if (language === 'mermaid') {
-          return <MermaidDiagram chart={codeContent.trim()} />;
-        }
+  const webStyles = useMemo(() => generateWebStyles(colors, isDark), [colors, isDark]);
+  const syntaxTheme = isDark ? githubDarkTheme : githubLightTheme;
+  const codeBlockBg = isDark ? '#161b22' : '#f6f8fa';
 
-        // Fence コードブロック (``` で囲まれたもの) - 言語指定があればシンタックスハイライト
-        if (language) {
+  const components: Components = useMemo(
+    () => ({
+      // pre tag: fence/indented code block wrapper
+      pre({ children, node, ...props }) {
+        const child = React.Children.toArray(children)[0];
+        if (React.isValidElement(child)) {
+          const codeProps = child.props as { className?: string; children?: React.ReactNode };
+          const className = codeProps.className || '';
+          const match = /language-(\w+)/.exec(className);
+          const language = match ? match[1] : null;
+          const codeContent = String(codeProps.children || '').replace(/\n$/, '');
+
+          // Mermaid diagram
+          if (language === 'mermaid') {
+            return <MermaidDiagram chart={codeContent.trim()} themeMode={themeMode} />;
+          }
+
+          // Fence code block with language - syntax highlighting
+          if (language) {
+            return (
+              <div className="fence-block-wrapper">
+                <div className="fence-block-language">{language}</div>
+                <SyntaxHighlighter
+                  style={syntaxTheme}
+                  language={language}
+                  PreTag="div"
+                  className="fence-block"
+                  customStyle={{
+                    background: codeBlockBg,
+                    padding: '16px',
+                    margin: 0,
+                    overflow: 'auto',
+                    borderRadius: '0 0 6px 6px',
+                  }}
+                >
+                  {codeContent}
+                </SyntaxHighlighter>
+              </div>
+            );
+          }
+
+          // Indented code block or fence without language
           return (
-            <div className="fence-block-wrapper">
-              <div className="fence-block-language">{language}</div>
-              <SyntaxHighlighter
-                style={githubDarkTheme}
-                language={language}
-                PreTag="div"
-                className="fence-block"
-                customStyle={{
-                  background: '#161b22',
-                  padding: '16px',
-                  margin: 0,
-                  overflow: 'auto',
-                  borderRadius: '0 0 6px 6px',
-                }}
-              >
-                {codeContent}
-              </SyntaxHighlighter>
+            <div className="indented-code-block">
+              <code>{codeContent}</code>
             </div>
           );
         }
 
-        // Indented コードブロック (4スペースインデント) または言語指定なしの fence
-        // シンプルなスタイルで表示
+        return <pre {...props}>{children}</pre>;
+      },
+      // Inline code
+      code({ className, children, ...props }) {
         return (
-          <div className="indented-code-block">
-            <code>{codeContent}</code>
+          <code className="inline-code" {...props}>
+            {children}
+          </code>
+        );
+      },
+      a({ href, children, ...props }) {
+        const handleClick = (e: React.MouseEvent) => {
+          if (onLinkPress && href) {
+            e.preventDefault();
+            onLinkPress(href);
+          }
+        };
+
+        return (
+          <a href={href} target="_blank" rel="noopener noreferrer" onClick={handleClick} {...props}>
+            {children}
+          </a>
+        );
+      },
+      table({ children, ...props }) {
+        return (
+          <div className="table-wrapper">
+            <table {...props}>{children}</table>
           </div>
         );
-      }
-
-      // その他の場合はデフォルトの pre タグ
-      return <pre {...props}>{children}</pre>;
-    },
-    // インラインコード
-    code({ className, children, ...props }) {
-      // pre の中の code は pre コンポーネントで処理されるので、ここに来るのはインラインのみ
-      return (
-        <code className="inline-code" {...props}>
-          {children}
-        </code>
-      );
-    },
-    a({ href, children, ...props }) {
-      const handleClick = (e: React.MouseEvent) => {
-        if (onLinkPress && href) {
-          e.preventDefault();
-          onLinkPress(href);
-        }
-      };
-
-      return (
-        <a
-          href={href}
-          target="_blank"
-          rel="noopener noreferrer"
-          onClick={handleClick}
-          {...props}
-        >
-          {children}
-        </a>
-      );
-    },
-    table({ children, ...props }) {
-      return (
-        <div className="table-wrapper">
-          <table {...props}>{children}</table>
-        </div>
-      );
-    },
-    img({ src, alt, ...props }) {
-      return (
-        <img
-          src={src}
-          alt={alt || ''}
-          loading="lazy"
-          {...props}
-        />
-      );
-    },
-  };
+      },
+      img({ src, alt, ...props }) {
+        return <img src={src} alt={alt || ''} loading="lazy" {...props} />;
+      },
+    }),
+    [themeMode, syntaxTheme, codeBlockBg, onLinkPress]
+  );
 
   return (
     <View style={styles.container}>

@@ -14,10 +14,10 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { colors, spacing, borderRadius, fontSize, fontWeight } from '../src/theme';
-import { Card } from '../src/components/ui';
+import { spacing, borderRadius, fontSize, fontWeight } from '../src/theme';
+import { Card, ThemeToggle } from '../src/components/ui';
 import { MarkdownRenderer } from '../src/components/markdown';
-import { useGoogleAuth, useShare } from '../src/hooks';
+import { useGoogleAuth, useShare, useTheme } from '../src/hooks';
 import { addFileToHistory } from '../src/services';
 
 type ViewerParams = {
@@ -28,6 +28,7 @@ type ViewerParams = {
 };
 
 export default function ViewerScreen() {
+  const { colors, mode } = useTheme();
   const params = useLocalSearchParams<ViewerParams>();
   const { fetchFileContent, isLoading: isAuthLoading, isAuthenticated, accessToken } = useGoogleAuth();
   const { shareContent, isProcessing } = useShare();
@@ -88,9 +89,9 @@ export default function ViewerScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.bgPrimary }]} edges={['top']}>
       {/* Header */}
-      <View style={styles.header}>
+      <View style={[styles.header, { borderBottomColor: colors.border, backgroundColor: colors.bgSecondary }]}>
         <TouchableOpacity style={styles.backButton} onPress={handleBack}>
           <Ionicons name="arrow-back" size={24} color={colors.textPrimary} />
         </TouchableOpacity>
@@ -100,14 +101,16 @@ export default function ViewerScreen() {
             size={16}
             color={colors.accent}
           />
-          <Text style={styles.fileName} numberOfLines={1}>
+          <Text style={[styles.fileName, { color: colors.accent }]} numberOfLines={1}>
             {params.name}
           </Text>
         </View>
         <View style={styles.headerActions}>
+          <ThemeToggle />
           <TouchableOpacity
             style={[
               styles.pdfButton,
+              { backgroundColor: colors.accent },
               (isProcessing || !content) && styles.pdfButtonDisabled,
             ]}
             onPress={handleDownloadPdf}
@@ -119,7 +122,7 @@ export default function ViewerScreen() {
             ) : (
               <>
                 <Ionicons name="download-outline" size={16} color={colors.bgPrimary} />
-                <Text style={styles.pdfButtonText}>PDF</Text>
+                <Text style={[styles.pdfButtonText, { color: colors.bgPrimary }]}>PDF</Text>
               </>
             )}
           </TouchableOpacity>
@@ -130,14 +133,17 @@ export default function ViewerScreen() {
       {isLoading ? (
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={colors.accent} />
-          <Text style={styles.loadingText}>Loading...</Text>
+          <Text style={[styles.loadingText, { color: colors.textMuted }]}>Loading...</Text>
         </View>
       ) : error ? (
         <View style={styles.errorContainer}>
           <Ionicons name="alert-circle-outline" size={48} color={colors.error} />
-          <Text style={styles.errorText}>{error}</Text>
-          <TouchableOpacity style={styles.retryButton} onPress={loadFileContent}>
-            <Text style={styles.retryText}>Retry</Text>
+          <Text style={[styles.errorText, { color: colors.error }]}>{error}</Text>
+          <TouchableOpacity
+            style={[styles.retryButton, { backgroundColor: colors.bgTertiary, borderColor: colors.border }]}
+            onPress={loadFileContent}
+          >
+            <Text style={[styles.retryText, { color: colors.textPrimary }]}>Retry</Text>
           </TouchableOpacity>
         </View>
       ) : content ? (
@@ -147,13 +153,13 @@ export default function ViewerScreen() {
           showsVerticalScrollIndicator={false}
         >
           <Card style={styles.contentCard}>
-            <MarkdownRenderer content={content} onLinkPress={handleLinkPress} />
+            <MarkdownRenderer content={content} onLinkPress={handleLinkPress} themeMode={mode} />
           </Card>
         </ScrollView>
       ) : (
         <View style={styles.emptyContainer}>
           <Ionicons name="document-outline" size={48} color={colors.textMuted} />
-          <Text style={styles.emptyText}>No content</Text>
+          <Text style={[styles.emptyText, { color: colors.textMuted }]}>No content</Text>
         </View>
       )}
     </SafeAreaView>
@@ -163,7 +169,6 @@ export default function ViewerScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.bgPrimary,
   },
   header: {
     flexDirection: 'row',
@@ -171,8 +176,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm,
     borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-    backgroundColor: colors.bgSecondary,
     gap: spacing.sm,
   },
   backButton: {
@@ -191,7 +194,6 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: fontSize.lg,
     fontWeight: fontWeight.medium,
-    color: colors.accent,
   },
   headerActions: {
     flexDirection: 'row',
@@ -202,7 +204,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.xs,
-    backgroundColor: colors.accent,
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm,
     borderRadius: borderRadius.md,
@@ -213,7 +214,6 @@ const styles = StyleSheet.create({
   pdfButtonText: {
     fontSize: fontSize.sm,
     fontWeight: fontWeight.semibold,
-    color: colors.bgPrimary,
   },
 
   // Loading
@@ -225,7 +225,6 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     fontSize: fontSize.base,
-    color: colors.textMuted,
   },
 
   // Error
@@ -238,21 +237,17 @@ const styles = StyleSheet.create({
   },
   errorText: {
     fontSize: fontSize.base,
-    color: colors.error,
     textAlign: 'center',
   },
   retryButton: {
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.sm,
-    backgroundColor: colors.bgTertiary,
     borderRadius: borderRadius.md,
     borderWidth: 1,
-    borderColor: colors.border,
     marginTop: spacing.md,
   },
   retryText: {
     fontSize: fontSize.base,
-    color: colors.textPrimary,
   },
 
   // Empty
@@ -264,7 +259,6 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontSize: fontSize.base,
-    color: colors.textMuted,
   },
 
   // Content

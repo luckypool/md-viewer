@@ -10,3 +10,5 @@ export type { LocalFile } from './useFilePicker';
 
 export { useShare } from './useShare';
 export type { UseShareReturn } from './useShare';
+
+export { useTheme } from './useTheme';
