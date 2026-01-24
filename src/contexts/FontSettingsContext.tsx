@@ -11,9 +11,9 @@ export type FontFamily = 'system' | 'serif' | 'sans-serif';
 
 // Font size multipliers
 export const fontSizeMultipliers: Record<FontSize, number> = {
-  small: 0.85,
+  small: 0.9,
   medium: 1.0,
-  large: 1.15,
+  large: 1.1,
 };
 
 // Font family stacks

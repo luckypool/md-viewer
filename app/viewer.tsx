@@ -10,16 +10,18 @@ import {
   ScrollView,
   TouchableOpacity,
   ActivityIndicator,
+  Modal,
+  Pressable,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { spacing, borderRadius, fontSize, fontWeight } from '../src/theme';
-import { Card, ThemeToggle, LanguageToggle, FontSettingsPanel } from '../src/components/ui';
+import { Card, Button } from '../src/components/ui';
 import { MarkdownRenderer } from '../src/components/markdown';
 import { useGoogleAuth, useShare, useTheme, useLanguage } from '../src/hooks';
+import { useFontSettings, FontSize, FontFamily } from '../src/contexts/FontSettingsContext';
 import { addFileToHistory } from '../src/services';
-import { IconButton } from '../src/components/ui';
 
 type ViewerParams = {
   id: string;
@@ -29,8 +31,9 @@ type ViewerParams = {
 };
 
 export default function ViewerScreen() {
-  const { colors, mode } = useTheme();
-  const { t } = useLanguage();
+  const { colors, mode: themeMode, setTheme } = useTheme();
+  const { t, language, setLanguage } = useLanguage();
+  const { settings: fontSettings, setFontSize, setFontFamily } = useFontSettings();
   const params = useLocalSearchParams<ViewerParams>();
   const { fetchFileContent, isLoading: isAuthLoading, isAuthenticated, accessToken } = useGoogleAuth();
   const { shareContent, isProcessing } = useShare();
@@ -38,7 +41,7 @@ export default function ViewerScreen() {
   const [content, setContent] = useState<string | null>(params.content || null);
   const [isLoading, setIsLoading] = useState(!params.content);
   const [error, setError] = useState<string | null>(null);
-  const [showFontSettings, setShowFontSettings] = useState(false);
+  const [showFileInfo, setShowFileInfo] = useState(false);
 
   useEffect(() => {
     if (params.source === 'google-drive' && !params.content) {
@@ -79,6 +82,7 @@ export default function ViewerScreen() {
 
   const handleDownloadPdf = async () => {
     if (content && params.name) {
+      setShowFileInfo(false);
       await shareContent(content, params.name);
     }
   };
@@ -91,52 +95,50 @@ export default function ViewerScreen() {
     window.open(url, '_blank');
   };
 
+  const fontSizeOptions: { value: FontSize; labelKey: 'small' | 'medium' | 'large' }[] = [
+    { value: 'small', labelKey: 'small' },
+    { value: 'medium', labelKey: 'medium' },
+    { value: 'large', labelKey: 'large' },
+  ];
+
+  const fontFamilyOptions: { value: FontFamily; labelKey: 'system' | 'serif' | 'sansSerif' }[] = [
+    { value: 'system', labelKey: 'system' },
+    { value: 'serif', labelKey: 'serif' },
+    { value: 'sans-serif', labelKey: 'sansSerif' },
+  ];
+
+  const fontSizeLabels: Record<'small' | 'medium' | 'large', string> = {
+    small: t.fontSettings.small,
+    medium: t.fontSettings.medium,
+    large: t.fontSettings.large,
+  };
+
+  const fontFamilyLabels: Record<'system' | 'serif' | 'sansSerif', string> = {
+    system: t.fontSettings.system,
+    serif: t.fontSettings.serif,
+    sansSerif: t.fontSettings.sansSerif,
+  };
+
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.bgPrimary }]} edges={['top']}>
       {/* Header */}
       <View style={[styles.header, { borderBottomColor: colors.border, backgroundColor: colors.bgSecondary }]}>
         <TouchableOpacity style={styles.backButton} onPress={handleBack}>
-          <Ionicons name="arrow-back" size={24} color={colors.textPrimary} />
+          <Ionicons name="chevron-back" size={28} color={colors.textPrimary} />
         </TouchableOpacity>
-        <View style={styles.headerTitle}>
-          <Ionicons
-            name={params.source === 'google-drive' ? 'logo-google' : 'document-outline'}
-            size={16}
-            color={colors.accent}
-          />
-          <Text style={[styles.fileName, { color: colors.accent }]} numberOfLines={1}>
+
+        <TouchableOpacity
+          style={styles.headerTitle}
+          onPress={() => setShowFileInfo(true)}
+          activeOpacity={0.7}
+        >
+          <Text style={[styles.fileName, { color: colors.textPrimary }]} numberOfLines={1}>
             {params.name}
           </Text>
-        </View>
-        <View style={styles.headerActions}>
-          <TouchableOpacity
-            style={[styles.settingsButton, { backgroundColor: colors.bgTertiary }]}
-            onPress={() => setShowFontSettings(true)}
-          >
-            <Ionicons name="text-outline" size={18} color={colors.textSecondary} />
-          </TouchableOpacity>
-          <LanguageToggle />
-          <ThemeToggle />
-          <TouchableOpacity
-            style={[
-              styles.pdfButton,
-              { backgroundColor: colors.accent },
-              (isProcessing || !content) && styles.pdfButtonDisabled,
-            ]}
-            onPress={handleDownloadPdf}
-            disabled={isProcessing || !content}
-            activeOpacity={0.7}
-          >
-            {isProcessing ? (
-              <ActivityIndicator size="small" color={colors.bgPrimary} />
-            ) : (
-              <>
-                <Ionicons name="download-outline" size={16} color={colors.bgPrimary} />
-                <Text style={[styles.pdfButtonText, { color: colors.bgPrimary }]}>PDF</Text>
-              </>
-            )}
-          </TouchableOpacity>
-        </View>
+          <Ionicons name="chevron-down" size={16} color={colors.textMuted} />
+        </TouchableOpacity>
+
+        <View style={styles.headerSpacer} />
       </View>
 
       {/* Content */}
@@ -163,7 +165,7 @@ export default function ViewerScreen() {
           showsVerticalScrollIndicator={false}
         >
           <Card style={styles.contentCard}>
-            <MarkdownRenderer content={content} onLinkPress={handleLinkPress} themeMode={mode} />
+            <MarkdownRenderer content={content} onLinkPress={handleLinkPress} themeMode={themeMode} />
           </Card>
         </ScrollView>
       ) : (
@@ -173,11 +175,163 @@ export default function ViewerScreen() {
         </View>
       )}
 
-      {/* Font Settings Panel */}
-      <FontSettingsPanel
-        visible={showFontSettings}
-        onClose={() => setShowFontSettings(false)}
-      />
+      {/* File Info Dialog */}
+      <Modal
+        visible={showFileInfo}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowFileInfo(false)}
+      >
+        <Pressable style={styles.dialogOverlay} onPress={() => setShowFileInfo(false)}>
+          <Pressable
+            style={[styles.dialogPanel, { backgroundColor: colors.bgSecondary, borderColor: colors.border }]}
+            onPress={(e) => e.stopPropagation()}
+          >
+            {/* Dialog Header */}
+            <View style={[styles.dialogHeader, { borderBottomColor: colors.border }]}>
+              <Text style={[styles.dialogTitle, { color: colors.textPrimary }]}>
+                {t.fileInfo.title}
+              </Text>
+              <TouchableOpacity onPress={() => setShowFileInfo(false)} style={styles.dialogClose}>
+                <Ionicons name="close" size={24} color={colors.textSecondary} />
+              </TouchableOpacity>
+            </View>
+
+            {/* File Info */}
+            <View style={[styles.dialogSection, { borderBottomColor: colors.border }]}>
+              <View style={styles.fileInfoRow}>
+                <Ionicons
+                  name={params.source === 'google-drive' ? 'logo-google' : 'document-outline'}
+                  size={20}
+                  color={colors.accent}
+                />
+                <Text style={[styles.fileInfoName, { color: colors.textPrimary }]}>
+                  {params.name}
+                </Text>
+              </View>
+              <View style={styles.fileInfoRow}>
+                <Text style={[styles.fileInfoLabel, { color: colors.textMuted }]}>
+                  {t.fileInfo.source}:
+                </Text>
+                <Text style={[styles.fileInfoValue, { color: colors.textSecondary }]}>
+                  {params.source === 'google-drive' ? t.fileInfo.googleDrive : t.fileInfo.local}
+                </Text>
+              </View>
+            </View>
+
+            {/* Display Settings */}
+            <View style={styles.dialogSection}>
+              <Text style={[styles.dialogSectionTitle, { color: colors.textMuted }]}>
+                {t.menu.display}
+              </Text>
+
+              {/* Font Size */}
+              <View style={styles.dialogSettingRow}>
+                <Text style={[styles.dialogSettingLabel, { color: colors.textPrimary }]}>
+                  {t.fontSettings.fontSize}
+                </Text>
+                <View style={styles.dialogSettingOptions}>
+                  {fontSizeOptions.map(option => (
+                    <TouchableOpacity
+                      key={option.value}
+                      style={[
+                        styles.dialogOption,
+                        {
+                          backgroundColor: fontSettings.fontSize === option.value ? colors.accentMuted : colors.bgTertiary,
+                        }
+                      ]}
+                      onPress={() => setFontSize(option.value)}
+                    >
+                      <Text style={[
+                        styles.dialogOptionText,
+                        { color: fontSettings.fontSize === option.value ? colors.accent : colors.textSecondary }
+                      ]}>
+                        {fontSizeLabels[option.labelKey]}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              </View>
+
+              {/* Font Family */}
+              <View style={styles.dialogSettingRow}>
+                <Text style={[styles.dialogSettingLabel, { color: colors.textPrimary }]}>
+                  {t.fontSettings.fontFamily}
+                </Text>
+                <View style={styles.dialogSettingOptions}>
+                  {fontFamilyOptions.map(option => (
+                    <TouchableOpacity
+                      key={option.value}
+                      style={[
+                        styles.dialogOption,
+                        {
+                          backgroundColor: fontSettings.fontFamily === option.value ? colors.accentMuted : colors.bgTertiary,
+                        }
+                      ]}
+                      onPress={() => setFontFamily(option.value)}
+                    >
+                      <Text style={[
+                        styles.dialogOptionText,
+                        { color: fontSettings.fontFamily === option.value ? colors.accent : colors.textSecondary }
+                      ]}>
+                        {fontFamilyLabels[option.labelKey]}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              </View>
+            </View>
+
+            {/* Theme */}
+            <View style={styles.dialogSection}>
+              <Text style={[styles.dialogSectionTitle, { color: colors.textMuted }]}>
+                {t.settings.theme}
+              </Text>
+              <View style={styles.dialogSettingOptions}>
+                <TouchableOpacity
+                  style={[
+                    styles.dialogOption,
+                    styles.dialogOptionWide,
+                    { backgroundColor: themeMode === 'light' ? colors.accentMuted : colors.bgTertiary }
+                  ]}
+                  onPress={() => setTheme('light')}
+                >
+                  <Ionicons name="sunny-outline" size={18} color={themeMode === 'light' ? colors.accent : colors.textSecondary} />
+                  <Text style={[styles.dialogOptionText, { color: themeMode === 'light' ? colors.accent : colors.textSecondary }]}>
+                    {t.settings.light}
+                  </Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[
+                    styles.dialogOption,
+                    styles.dialogOptionWide,
+                    { backgroundColor: themeMode === 'dark' ? colors.accentMuted : colors.bgTertiary }
+                  ]}
+                  onPress={() => setTheme('dark')}
+                >
+                  <Ionicons name="moon-outline" size={18} color={themeMode === 'dark' ? colors.accent : colors.textSecondary} />
+                  <Text style={[styles.dialogOptionText, { color: themeMode === 'dark' ? colors.accent : colors.textSecondary }]}>
+                    {t.settings.dark}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+
+            {/* PDF Export */}
+            <View style={[styles.dialogSection, { borderTopColor: colors.border, borderTopWidth: 1 }]}>
+              <Button
+                onPress={handleDownloadPdf}
+                disabled={isProcessing || !content}
+                loading={isProcessing}
+                icon={<Ionicons name="download-outline" size={20} color={colors.bgPrimary} />}
+                style={styles.pdfButton}
+              >
+                {t.fileInfo.exportPdf}
+              </Button>
+            </View>
+          </Pressable>
+        </Pressable>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -189,14 +343,13 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: spacing.md,
+    paddingHorizontal: spacing.sm,
     paddingVertical: spacing.sm,
     borderBottomWidth: 1,
-    gap: spacing.sm,
   },
   backButton: {
-    width: 40,
-    height: 40,
+    width: 44,
+    height: 44,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -204,39 +357,17 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: spacing.sm,
-  },
-  fileName: {
-    flex: 1,
-    fontSize: fontSize.lg,
-    fontWeight: fontWeight.medium,
-  },
-  headerActions: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.xs,
-  },
-  settingsButton: {
-    width: 36,
-    height: 36,
-    borderRadius: borderRadius.md,
-    alignItems: 'center',
     justifyContent: 'center',
-  },
-  pdfButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
     gap: spacing.xs,
     paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-    borderRadius: borderRadius.md,
   },
-  pdfButtonDisabled: {
-    opacity: 0.5,
+  fileName: {
+    fontSize: fontSize.base,
+    fontWeight: fontWeight.medium,
+    maxWidth: '80%',
   },
-  pdfButtonText: {
-    fontSize: fontSize.sm,
-    fontWeight: fontWeight.semibold,
+  headerSpacer: {
+    width: 44,
   },
 
   // Loading
@@ -294,5 +425,95 @@ const styles = StyleSheet.create({
   },
   contentCard: {
     padding: spacing.lg,
+  },
+
+  // Dialog
+  dialogOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: spacing.xl,
+  },
+  dialogPanel: {
+    width: '100%',
+    maxWidth: 400,
+    borderRadius: borderRadius.lg,
+    borderWidth: 1,
+    overflow: 'hidden',
+  },
+  dialogHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md,
+    borderBottomWidth: 1,
+  },
+  dialogTitle: {
+    fontSize: fontSize.lg,
+    fontWeight: fontWeight.semibold,
+  },
+  dialogClose: {
+    padding: spacing.xs,
+  },
+  dialogSection: {
+    padding: spacing.lg,
+    borderBottomWidth: 1,
+    borderBottomColor: 'transparent',
+  },
+  dialogSectionTitle: {
+    fontSize: fontSize.xs,
+    fontWeight: fontWeight.medium,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    marginBottom: spacing.sm,
+  },
+  fileInfoRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    marginBottom: spacing.sm,
+  },
+  fileInfoName: {
+    flex: 1,
+    fontSize: fontSize.base,
+    fontWeight: fontWeight.medium,
+  },
+  fileInfoLabel: {
+    fontSize: fontSize.sm,
+  },
+  fileInfoValue: {
+    fontSize: fontSize.sm,
+  },
+  dialogSettingRow: {
+    marginBottom: spacing.md,
+  },
+  dialogSettingLabel: {
+    fontSize: fontSize.sm,
+    marginBottom: spacing.xs,
+  },
+  dialogSettingOptions: {
+    flexDirection: 'row',
+    gap: spacing.sm,
+  },
+  dialogOption: {
+    flex: 1,
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.sm,
+    borderRadius: borderRadius.md,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  dialogOptionWide: {
+    flexDirection: 'row',
+    gap: spacing.xs,
+  },
+  dialogOptionText: {
+    fontSize: fontSize.sm,
+    fontWeight: fontWeight.medium,
+  },
+  pdfButton: {
+    width: '100%',
   },
 });

@@ -148,6 +148,22 @@ export const en = {
     preview: 'Preview',
     previewText: 'The quick brown fox jumps over the lazy dog.',
   },
+
+  // Menu
+  menu: {
+    title: 'Menu',
+    account: 'Account',
+    display: 'Display Settings',
+  },
+
+  // File Info
+  fileInfo: {
+    title: 'File Info',
+    source: 'Source',
+    googleDrive: 'Google Drive',
+    local: 'Local File',
+    exportPdf: 'Export PDF',
+  },
 };
 
 export type Translations = {
@@ -253,5 +269,17 @@ export type Translations = {
     sansSerif: string;
     preview: string;
     previewText: string;
+  };
+  menu: {
+    title: string;
+    account: string;
+    display: string;
+  };
+  fileInfo: {
+    title: string;
+    source: string;
+    googleDrive: string;
+    local: string;
+    exportPdf: string;
   };
 };
