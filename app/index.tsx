@@ -380,6 +380,7 @@ export default function HomeScreen() {
 
       {/* Slide-in Menu */}
       <Animated.View
+        pointerEvents={isMenuOpen ? 'auto' : 'none'}
         style={[
           styles.slideMenu,
           {
@@ -396,8 +397,12 @@ export default function HomeScreen() {
                 <Ionicons name="person" size={28} color={colors.textMuted} />
               </View>
               <View style={styles.menuUserInfo}>
-                <Text style={[styles.menuUserName, { color: colors.textPrimary }]}>{userInfo.displayName}</Text>
-                <Text style={[styles.menuUserEmail, { color: colors.textMuted }]}>{userInfo.email}</Text>
+                <Text style={[styles.menuUserName, { color: colors.textPrimary }]} numberOfLines={1}>
+                  {userInfo.displayName}
+                </Text>
+                <Text style={[styles.menuUserEmail, { color: colors.textMuted }]} numberOfLines={1}>
+                  {userInfo.email}
+                </Text>
               </View>
             </View>
           )}
@@ -855,6 +860,7 @@ const styles = StyleSheet.create({
   },
   menuUserInfo: {
     flex: 1,
+    overflow: 'hidden',
   },
   menuUserName: {
     fontSize: fontSize.base,
