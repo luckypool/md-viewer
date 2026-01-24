@@ -2,10 +2,10 @@
  * MD Viewer - Root Layout
  */
 
-import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { Stack } from 'expo-router';
 import { View, StyleSheet } from 'react-native';
-import { colors } from '../src/theme';
+import { ThemeProvider } from '../src/contexts/ThemeContext';
+import { useTheme } from '../src/hooks';
 
 export { ErrorBoundary } from 'expo-router';
 
@@ -13,9 +13,11 @@ export const unstable_settings = {
   initialRouteName: 'index',
 };
 
-export default function RootLayout() {
+function RootLayoutContent() {
+  const { colors } = useTheme();
+
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: colors.bgPrimary }]}>
       <Stack
         screenOptions={{
           headerShown: false,
@@ -42,9 +44,16 @@ export default function RootLayout() {
   );
 }
 
+export default function RootLayout() {
+  return (
+    <ThemeProvider>
+      <RootLayoutContent />
+    </ThemeProvider>
+  );
+}
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.bgPrimary,
   },
 });

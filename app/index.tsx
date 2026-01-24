@@ -16,14 +16,15 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { colors, spacing, borderRadius, fontSize, fontWeight, shadows } from '../src/theme';
-import { Button, LoadingSpinner, FAB } from '../src/components/ui';
-import { useGoogleAuth } from '../src/hooks';
+import { spacing, borderRadius, fontSize, fontWeight, shadows } from '../src/theme';
+import { Button, LoadingSpinner, FAB, ThemeToggle } from '../src/components/ui';
+import { useGoogleAuth, useTheme } from '../src/hooks';
 import { useFilePicker } from '../src/hooks';
 import { getFileHistory, clearFileHistory, addFileToHistory } from '../src/services';
 import type { FileHistoryItem } from '../src/types';
 
 export default function HomeScreen() {
+  const { colors } = useTheme();
   const {
     isLoading,
     isApiLoaded,
@@ -107,24 +108,27 @@ export default function HomeScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.bgPrimary }]}>
       {/* Header */}
-      <View style={styles.header}>
+      <View style={[styles.header, { borderBottomColor: colors.border, backgroundColor: colors.bgSecondary }]}>
         <View style={styles.headerContent}>
           <Image
             source={require('../assets/images/logo.png')}
             style={styles.logo}
             resizeMode="contain"
           />
-          {isAuthenticated && userInfo && (
-            <TouchableOpacity
-              style={styles.userAvatar}
-              onPress={() => setIsUserMenuOpen(!isUserMenuOpen)}
-              activeOpacity={0.7}
-            >
-              <Ionicons name="person" size={20} color={colors.textSecondary} />
-            </TouchableOpacity>
-          )}
+          <View style={styles.headerActions}>
+            <ThemeToggle />
+            {isAuthenticated && userInfo && (
+              <TouchableOpacity
+                style={[styles.userAvatar, { backgroundColor: colors.bgTertiary, borderColor: colors.border }]}
+                onPress={() => setIsUserMenuOpen(!isUserMenuOpen)}
+                activeOpacity={0.7}
+              >
+                <Ionicons name="person" size={20} color={colors.textSecondary} />
+              </TouchableOpacity>
+            )}
+          </View>
         </View>
       </View>
 
@@ -142,45 +146,45 @@ export default function HomeScreen() {
                 style={styles.heroIcon}
                 resizeMode="contain"
               />
-              <Text style={styles.heroTitle}>Welcome to MD Viewer</Text>
-              <Text style={styles.heroSubtitle}>
+              <Text style={[styles.heroTitle, { color: colors.textPrimary }]}>Welcome to MD Viewer</Text>
+              <Text style={[styles.heroSubtitle, { color: colors.textSecondary }]}>
                 A beautiful Markdown viewer for{'\n'}Google Drive
               </Text>
             </View>
 
             {/* Features Section */}
             <View style={styles.featuresSection}>
-              <View style={styles.featureCard}>
-                <View style={styles.featureIconContainer}>
+              <View style={[styles.featureCard, { backgroundColor: colors.bgCard, borderColor: colors.border }]}>
+                <View style={[styles.featureIconContainer, { backgroundColor: colors.accentMuted }]}>
                   <Ionicons name="logo-google" size={24} color={colors.accent} />
                 </View>
                 <View style={styles.featureContent}>
-                  <Text style={styles.featureTitle}>Google Drive Integration</Text>
-                  <Text style={styles.featureDescription}>
+                  <Text style={[styles.featureTitle, { color: colors.textPrimary }]}>Google Drive Integration</Text>
+                  <Text style={[styles.featureDescription, { color: colors.textSecondary }]}>
                     Search and open Markdown files directly from your Google Drive
                   </Text>
                 </View>
               </View>
 
-              <View style={styles.featureCard}>
-                <View style={styles.featureIconContainer}>
+              <View style={[styles.featureCard, { backgroundColor: colors.bgCard, borderColor: colors.border }]}>
+                <View style={[styles.featureIconContainer, { backgroundColor: colors.accentMuted }]}>
                   <Ionicons name="color-palette-outline" size={24} color={colors.accent} />
                 </View>
                 <View style={styles.featureContent}>
-                  <Text style={styles.featureTitle}>Beautiful Rendering</Text>
-                  <Text style={styles.featureDescription}>
+                  <Text style={[styles.featureTitle, { color: colors.textPrimary }]}>Beautiful Rendering</Text>
+                  <Text style={[styles.featureDescription, { color: colors.textSecondary }]}>
                     Syntax highlighting, Mermaid diagrams, and clean typography
                   </Text>
                 </View>
               </View>
 
-              <View style={styles.featureCard}>
-                <View style={styles.featureIconContainer}>
+              <View style={[styles.featureCard, { backgroundColor: colors.bgCard, borderColor: colors.border }]}>
+                <View style={[styles.featureIconContainer, { backgroundColor: colors.accentMuted }]}>
                   <Ionicons name="share-outline" size={24} color={colors.accent} />
                 </View>
                 <View style={styles.featureContent}>
-                  <Text style={styles.featureTitle}>Export to PDF</Text>
-                  <Text style={styles.featureDescription}>
+                  <Text style={[styles.featureTitle, { color: colors.textPrimary }]}>Export to PDF</Text>
+                  <Text style={[styles.featureDescription, { color: colors.textSecondary }]}>
                     Share your documents as beautifully formatted PDFs
                   </Text>
                 </View>
@@ -200,9 +204,9 @@ export default function HomeScreen() {
               </Button>
 
               <View style={styles.divider}>
-                <View style={styles.dividerLine} />
-                <Text style={styles.dividerText}>or</Text>
-                <View style={styles.dividerLine} />
+                <View style={[styles.dividerLine, { backgroundColor: colors.border }]} />
+                <Text style={[styles.dividerText, { color: colors.textMuted }]}>or</Text>
+                <View style={[styles.dividerLine, { backgroundColor: colors.border }]} />
               </View>
 
               <Button
@@ -216,21 +220,21 @@ export default function HomeScreen() {
 
             {/* Learn More Link */}
             <TouchableOpacity style={styles.learnMoreLink} onPress={handleOpenAbout}>
-              <Text style={styles.learnMoreText}>Learn more about MD Viewer</Text>
+              <Text style={[styles.learnMoreText, { color: colors.accent }]}>Learn more about MD Viewer</Text>
               <Ionicons name="arrow-forward" size={16} color={colors.accent} />
             </TouchableOpacity>
           </View>
         ) : (
           <View style={styles.authenticatedContent}>
             {/* Search Box */}
-            <Pressable style={styles.searchBox} onPress={handleOpenSearch}>
+            <Pressable style={[styles.searchBox, { backgroundColor: colors.bgSecondary, borderColor: colors.border }]} onPress={handleOpenSearch}>
               <Ionicons name="search" size={20} color={colors.textMuted} />
-              <Text style={styles.searchPlaceholder}>
+              <Text style={[styles.searchPlaceholder, { color: colors.textMuted }]}>
                 Search Google Drive...
               </Text>
               {Platform.OS === 'web' && (
-                <View style={styles.kbd}>
-                  <Text style={styles.kbdText}>⌘K</Text>
+                <View style={[styles.kbd, { backgroundColor: colors.bgTertiary, borderColor: colors.border }]}>
+                  <Text style={[styles.kbdText, { color: colors.textMuted }]}>⌘K</Text>
                 </View>
               )}
             </Pressable>
@@ -238,21 +242,21 @@ export default function HomeScreen() {
             {/* Recent Files */}
             {recentFiles.length > 0 && (
               <View style={styles.recentSection}>
-                <View style={styles.recentHeader}>
-                  <Text style={styles.recentTitle}>Recent Files</Text>
+                <View style={[styles.recentHeader, { borderBottomColor: colors.border }]}>
+                  <Text style={[styles.recentTitle, { color: colors.textSecondary }]}>Recent Files</Text>
                   <TouchableOpacity onPress={handleClearHistory}>
-                    <Text style={styles.clearButton}>Clear</Text>
+                    <Text style={[styles.clearButton, { color: colors.textMuted }]}>Clear</Text>
                   </TouchableOpacity>
                 </View>
 
                 {recentFiles.map((item) => (
                   <TouchableOpacity
                     key={item.id}
-                    style={styles.recentItem}
+                    style={[styles.recentItem, { backgroundColor: colors.bgCard, borderColor: colors.border }]}
                     onPress={() => handleOpenHistoryFile(item)}
                     activeOpacity={0.7}
                   >
-                    <View style={styles.recentIcon}>
+                    <View style={[styles.recentIcon, { backgroundColor: colors.accentMuted }]}>
                       <Ionicons
                         name={item.source === 'google-drive' ? 'logo-google' : 'document-outline'}
                         size={20}
@@ -260,10 +264,10 @@ export default function HomeScreen() {
                       />
                     </View>
                     <View style={styles.recentContent}>
-                      <Text style={styles.recentName} numberOfLines={1}>
+                      <Text style={[styles.recentName, { color: colors.textPrimary }]} numberOfLines={1}>
                         {item.name}
                       </Text>
-                      <Text style={styles.recentTime}>
+                      <Text style={[styles.recentTime, { color: colors.textMuted }]}>
                         {formatRelativeTime(item.selectedAt)}
                       </Text>
                     </View>
@@ -280,28 +284,28 @@ export default function HomeScreen() {
       {isAuthenticated && isUserMenuOpen && (
         <>
           <Pressable
-            style={styles.userMenuOverlay}
+            style={[styles.userMenuOverlay, { backgroundColor: colors.overlayLight }]}
             onPress={() => setIsUserMenuOpen(false)}
           />
-          <View style={styles.userMenu}>
+          <View style={[styles.userMenu, { backgroundColor: colors.bgSecondary, borderColor: colors.border }]}>
             {userInfo && (
-              <View style={styles.userMenuInfo}>
-                <View style={styles.userMenuAvatar}>
+              <View style={[styles.userMenuInfo, { borderBottomColor: colors.border }]}>
+                <View style={[styles.userMenuAvatar, { backgroundColor: colors.bgTertiary }]}>
                   <Ionicons name="person" size={24} color={colors.textMuted} />
                 </View>
                 <View style={styles.userMenuDetails}>
-                  <Text style={styles.userMenuName}>{userInfo.displayName}</Text>
-                  <Text style={styles.userMenuEmail}>{userInfo.email}</Text>
+                  <Text style={[styles.userMenuName, { color: colors.textPrimary }]}>{userInfo.displayName}</Text>
+                  <Text style={[styles.userMenuEmail, { color: colors.textMuted }]}>{userInfo.email}</Text>
                 </View>
               </View>
             )}
             <TouchableOpacity style={styles.userMenuItem} onPress={handleLocalFile}>
               <Ionicons name="folder-outline" size={20} color={colors.textSecondary} />
-              <Text style={styles.userMenuText}>Open Local File</Text>
+              <Text style={[styles.userMenuText, { color: colors.textPrimary }]}>Open Local File</Text>
             </TouchableOpacity>
             <TouchableOpacity style={styles.userMenuItem} onPress={handleOpenAbout}>
               <Ionicons name="information-circle-outline" size={20} color={colors.textSecondary} />
-              <Text style={styles.userMenuText}>About MD Viewer</Text>
+              <Text style={[styles.userMenuText, { color: colors.textPrimary }]}>About MD Viewer</Text>
             </TouchableOpacity>
             <TouchableOpacity
               style={[styles.userMenuItem, styles.userMenuLogout]}
@@ -318,7 +322,7 @@ export default function HomeScreen() {
       {isAuthenticated && (
         <FAB
           onPress={handleOpenSearch}
-          icon={<Ionicons name="search" size={24} color={colors.bgPrimary} />}
+          icon={<Ionicons name="search" size={24} color="#ffffff" />}
         />
       )}
     </SafeAreaView>
@@ -328,19 +332,21 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.bgPrimary,
   },
   header: {
     paddingHorizontal: spacing.xl,
     paddingVertical: spacing.md,
     borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-    backgroundColor: colors.bgSecondary,
   },
   headerContent: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+  },
+  headerActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
   },
   logo: {
     width: 160,
@@ -350,11 +356,9 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: colors.bgTertiary,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
-    borderColor: colors.border,
   },
   content: {
     flex: 1,
@@ -383,14 +387,12 @@ const styles = StyleSheet.create({
   heroTitle: {
     fontSize: fontSize['2xl'],
     fontWeight: fontWeight.bold,
-    color: colors.textPrimary,
     marginTop: spacing.lg,
     marginBottom: spacing.sm,
     textAlign: 'center',
   },
   heroSubtitle: {
     fontSize: fontSize.lg,
-    color: colors.textSecondary,
     textAlign: 'center',
     lineHeight: fontSize.lg * 1.5,
   },
@@ -402,9 +404,7 @@ const styles = StyleSheet.create({
   },
   featureCard: {
     flexDirection: 'row',
-    backgroundColor: colors.bgCard,
     borderWidth: 1,
-    borderColor: colors.border,
     borderRadius: borderRadius.lg,
     padding: spacing.lg,
     gap: spacing.md,
@@ -413,7 +413,6 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: borderRadius.md,
-    backgroundColor: colors.accentMuted,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -423,12 +422,10 @@ const styles = StyleSheet.create({
   featureTitle: {
     fontSize: fontSize.base,
     fontWeight: fontWeight.semibold,
-    color: colors.textPrimary,
     marginBottom: spacing.xs,
   },
   featureDescription: {
     fontSize: fontSize.sm,
-    color: colors.textSecondary,
     lineHeight: fontSize.sm * 1.5,
   },
 
@@ -450,11 +447,9 @@ const styles = StyleSheet.create({
   dividerLine: {
     flex: 1,
     height: 1,
-    backgroundColor: colors.border,
   },
   dividerText: {
     paddingHorizontal: spacing.md,
-    color: colors.textMuted,
     fontSize: fontSize.sm,
   },
 
@@ -468,7 +463,6 @@ const styles = StyleSheet.create({
   },
   learnMoreText: {
     fontSize: fontSize.sm,
-    color: colors.accent,
   },
 
   // Authenticated Content
@@ -478,9 +472,7 @@ const styles = StyleSheet.create({
   searchBox: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors.bgSecondary,
     borderWidth: 1,
-    borderColor: colors.border,
     borderRadius: borderRadius.lg,
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.md,
@@ -489,19 +481,15 @@ const styles = StyleSheet.create({
   },
   searchPlaceholder: {
     flex: 1,
-    color: colors.textMuted,
     fontSize: fontSize.base,
   },
   kbd: {
     paddingHorizontal: spacing.sm,
     paddingVertical: spacing.xs,
-    backgroundColor: colors.bgTertiary,
     borderWidth: 1,
-    borderColor: colors.border,
     borderRadius: borderRadius.sm,
   },
   kbdText: {
-    color: colors.textMuted,
     fontSize: fontSize.xs,
     fontFamily: Platform.OS === 'web' ? 'monospace' : undefined,
   },
@@ -517,25 +505,20 @@ const styles = StyleSheet.create({
     marginBottom: spacing.md,
     paddingBottom: spacing.sm,
     borderBottomWidth: 1,
-    borderBottomColor: colors.border,
   },
   recentTitle: {
     fontSize: fontSize.sm,
     fontWeight: fontWeight.semibold,
-    color: colors.textSecondary,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
   },
   clearButton: {
     fontSize: fontSize.sm,
-    color: colors.textMuted,
   },
   recentItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors.bgCard,
     borderWidth: 1,
-    borderColor: colors.border,
     borderRadius: borderRadius.md,
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm,
@@ -546,7 +529,6 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: borderRadius.sm,
-    backgroundColor: colors.accentMuted,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -556,27 +538,22 @@ const styles = StyleSheet.create({
   recentName: {
     fontSize: fontSize.base,
     fontWeight: fontWeight.medium,
-    color: colors.textPrimary,
   },
   recentTime: {
     fontSize: fontSize.xs,
-    color: colors.textMuted,
     marginTop: 2,
   },
 
   // User Menu
   userMenuOverlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: colors.overlayLight,
     zIndex: 898,
   },
   userMenu: {
     position: 'absolute',
     top: 70,
     right: spacing.xl,
-    backgroundColor: colors.bgSecondary,
     borderWidth: 1,
-    borderColor: colors.border,
     borderRadius: borderRadius.lg,
     padding: spacing.sm,
     minWidth: 240,
@@ -589,7 +566,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.md,
     borderBottomWidth: 1,
-    borderBottomColor: colors.border,
     marginBottom: spacing.sm,
     gap: spacing.md,
   },
@@ -597,7 +573,6 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: colors.bgTertiary,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -607,11 +582,9 @@ const styles = StyleSheet.create({
   userMenuName: {
     fontSize: fontSize.base,
     fontWeight: fontWeight.medium,
-    color: colors.textPrimary,
   },
   userMenuEmail: {
     fontSize: fontSize.xs,
-    color: colors.textMuted,
   },
   userMenuItem: {
     flexDirection: 'row',
@@ -623,7 +596,6 @@ const styles = StyleSheet.create({
   },
   userMenuText: {
     fontSize: fontSize.base,
-    color: colors.textPrimary,
   },
   userMenuLogout: {
     marginTop: spacing.xs,

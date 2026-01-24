@@ -3,3 +3,4 @@ export { IconButton } from './IconButton';
 export { LoadingSpinner } from './LoadingSpinner';
 export { Card } from './Card';
 export { FAB } from './FAB';
+export { ThemeToggle } from './ThemeToggle';
