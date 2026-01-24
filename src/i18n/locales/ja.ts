@@ -150,4 +150,20 @@ export const ja: Translations = {
     preview: 'プレビュー',
     previewText: 'あのイーハトーヴォのすきとおった風、夏でも底に冷たさをもつ青いそら。',
   },
+
+  // Menu
+  menu: {
+    title: 'メニュー',
+    account: 'アカウント',
+    display: '表示設定',
+  },
+
+  // File Info
+  fileInfo: {
+    title: 'ファイル情報',
+    source: 'ソース',
+    googleDrive: 'Google Drive',
+    local: 'ローカルファイル',
+    exportPdf: 'PDF出力',
+  },
 };

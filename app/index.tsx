@@ -2,7 +2,7 @@
  * MD Viewer - Home Screen
  */
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   View,
   Text,
@@ -12,6 +12,8 @@ import {
   Pressable,
   Platform,
   Image,
+  Animated,
+  Dimensions,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
@@ -20,12 +22,17 @@ import { spacing, borderRadius, fontSize, fontWeight, shadows } from '../src/the
 import { Button, LoadingSpinner, FAB } from '../src/components/ui';
 import { useGoogleAuth, useTheme, useLanguage } from '../src/hooks';
 import { useFilePicker } from '../src/hooks';
+import { useFontSettings, FontSize, FontFamily } from '../src/contexts/FontSettingsContext';
 import { getFileHistory, clearFileHistory, addFileToHistory } from '../src/services';
 import type { FileHistoryItem } from '../src/types';
+
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
+const MENU_WIDTH = Math.min(320, SCREEN_WIDTH * 0.85);
 
 export default function HomeScreen() {
   const { colors, mode: themeMode, setTheme } = useTheme();
   const { t, language, setLanguage } = useLanguage();
+  const { settings: fontSettings, setFontSize, setFontFamily } = useFontSettings();
   const {
     isLoading,
     isApiLoaded,
@@ -37,12 +44,20 @@ export default function HomeScreen() {
 
   const { openPicker } = useFilePicker();
   const [recentFiles, setRecentFiles] = useState<FileHistoryItem[]>([]);
-  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
-  const [isSettingsMenuOpen, setIsSettingsMenuOpen] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const menuAnimation = useRef(new Animated.Value(-MENU_WIDTH)).current;
 
   useEffect(() => {
     loadHistory();
   }, []);
+
+  useEffect(() => {
+    Animated.timing(menuAnimation, {
+      toValue: isMenuOpen ? 0 : -MENU_WIDTH,
+      duration: 250,
+      useNativeDriver: true,
+    }).start();
+  }, [isMenuOpen]);
 
   const loadHistory = async () => {
     const history = await getFileHistory();
@@ -50,7 +65,7 @@ export default function HomeScreen() {
   };
 
   const handleLocalFile = useCallback(async () => {
-    setIsUserMenuOpen(false);
+    setIsMenuOpen(false);
     const file = await openPicker();
     if (file) {
       await addFileToHistory({
@@ -74,6 +89,21 @@ export default function HomeScreen() {
     router.push('/search');
   }, []);
 
+  // Keyboard shortcut: Cmd+K to open search
+  useEffect(() => {
+    if (!isAuthenticated) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        handleOpenSearch();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isAuthenticated, handleOpenSearch]);
+
   const handleOpenHistoryFile = useCallback((item: FileHistoryItem) => {
     router.push({
       pathname: '/viewer',
@@ -91,8 +121,14 @@ export default function HomeScreen() {
   }, []);
 
   const handleOpenAbout = useCallback(() => {
+    setIsMenuOpen(false);
     router.push('/about');
   }, []);
+
+  const handleLogout = useCallback(() => {
+    setIsMenuOpen(false);
+    logout();
+  }, [logout]);
 
   const formatRelativeTime = (dateString: string): string => {
     const date = new Date(dateString);
@@ -109,36 +145,59 @@ export default function HomeScreen() {
     return date.toLocaleDateString(language === 'ja' ? 'ja-JP' : 'en-US');
   };
 
+  const fontSizeOptions: { value: FontSize; labelKey: 'small' | 'medium' | 'large' }[] = [
+    { value: 'small', labelKey: 'small' },
+    { value: 'medium', labelKey: 'medium' },
+    { value: 'large', labelKey: 'large' },
+  ];
+
+  const fontFamilyOptions: { value: FontFamily; labelKey: 'system' | 'serif' | 'sansSerif' }[] = [
+    { value: 'system', labelKey: 'system' },
+    { value: 'serif', labelKey: 'serif' },
+    { value: 'sans-serif', labelKey: 'sansSerif' },
+  ];
+
+  const fontSizeLabels: Record<'small' | 'medium' | 'large', string> = {
+    small: t.fontSettings.small,
+    medium: t.fontSettings.medium,
+    large: t.fontSettings.large,
+  };
+
+  const fontFamilyLabels: Record<'system' | 'serif' | 'sansSerif', string> = {
+    system: t.fontSettings.system,
+    serif: t.fontSettings.serif,
+    sansSerif: t.fontSettings.sansSerif,
+  };
+
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.bgPrimary }]}>
-      {/* Header */}
-      <View style={[styles.header, { borderBottomColor: colors.border, backgroundColor: colors.bgSecondary }]}>
-        <View style={styles.headerContent}>
-          <Image
-            source={require('../assets/images/logo.png')}
-            style={styles.logo}
-            resizeMode="contain"
-          />
-          <View style={styles.headerActions}>
-            <TouchableOpacity
-              style={[styles.menuButton, { backgroundColor: colors.bgTertiary }]}
-              onPress={() => setIsSettingsMenuOpen(!isSettingsMenuOpen)}
-              activeOpacity={0.7}
-            >
-              <Ionicons name="ellipsis-vertical" size={20} color={colors.textSecondary} />
-            </TouchableOpacity>
-            {isAuthenticated && userInfo && (
-              <TouchableOpacity
-                style={[styles.userAvatar, { backgroundColor: colors.bgTertiary, borderColor: colors.border }]}
-                onPress={() => setIsUserMenuOpen(!isUserMenuOpen)}
-                activeOpacity={0.7}
-              >
-                <Ionicons name="person" size={20} color={colors.textSecondary} />
-              </TouchableOpacity>
+      {/* Header - Only shown when authenticated */}
+      {isAuthenticated && (
+        <View style={[styles.header, { borderBottomColor: colors.border, backgroundColor: colors.bgSecondary }]}>
+          <TouchableOpacity
+            style={[styles.menuButton, { backgroundColor: colors.bgTertiary }]}
+            onPress={() => setIsMenuOpen(true)}
+            activeOpacity={0.7}
+          >
+            <Ionicons name="menu" size={22} color={colors.textPrimary} />
+          </TouchableOpacity>
+
+          <Pressable
+            style={[styles.headerSearchBar, { backgroundColor: colors.bgTertiary, borderColor: colors.border }]}
+            onPress={handleOpenSearch}
+          >
+            <Ionicons name="search" size={18} color={colors.textMuted} />
+            <Text style={[styles.headerSearchText, { color: colors.textMuted }]} numberOfLines={1}>
+              {t.home.searchPlaceholder}
+            </Text>
+            {Platform.OS === 'web' && (
+              <View style={[styles.kbd, { backgroundColor: colors.bgSecondary, borderColor: colors.border }]}>
+                <Text style={[styles.kbdText, { color: colors.textMuted }]}>⌘K</Text>
+              </View>
             )}
-          </View>
+          </Pressable>
         </View>
-      </View>
+      )}
 
       <ScrollView
         style={styles.content}
@@ -234,19 +293,6 @@ export default function HomeScreen() {
           </View>
         ) : (
           <View style={styles.authenticatedContent}>
-            {/* Search Box */}
-            <Pressable style={[styles.searchBox, { backgroundColor: colors.bgSecondary, borderColor: colors.border }]} onPress={handleOpenSearch}>
-              <Ionicons name="search" size={20} color={colors.textMuted} />
-              <Text style={[styles.searchPlaceholder, { color: colors.textMuted }]}>
-                {t.home.searchPlaceholder}
-              </Text>
-              {Platform.OS === 'web' && (
-                <View style={[styles.kbd, { backgroundColor: colors.bgTertiary, borderColor: colors.border }]}>
-                  <Text style={[styles.kbdText, { color: colors.textMuted }]}>⌘K</Text>
-                </View>
-              )}
-            </Pressable>
-
             {/* Recent Files */}
             {recentFiles.length > 0 && (
               <View style={styles.recentSection}>
@@ -284,127 +330,215 @@ export default function HomeScreen() {
                 ))}
               </View>
             )}
+
+            {recentFiles.length === 0 && (
+              <View style={styles.emptyState}>
+                <Ionicons name="document-text-outline" size={48} color={colors.textMuted} />
+                <Text style={[styles.emptyStateText, { color: colors.textMuted }]}>
+                  {t.home.searchPlaceholder}
+                </Text>
+              </View>
+            )}
           </View>
         )}
       </ScrollView>
 
-      {/* Settings Menu */}
-      {isSettingsMenuOpen && (
-        <>
-          <Pressable
-            style={[styles.settingsMenuOverlay, { backgroundColor: colors.overlayLight }]}
-            onPress={() => setIsSettingsMenuOpen(false)}
-          />
-          <View style={[styles.settingsMenu, { backgroundColor: colors.bgSecondary, borderColor: colors.border }]}>
-            {/* Theme Setting */}
-            <View style={styles.settingsSection}>
-              <Text style={[styles.settingsSectionTitle, { color: colors.textMuted }]}>
+      {/* Slide-in Menu Overlay */}
+      {isMenuOpen && (
+        <Pressable
+          style={[styles.menuOverlay, { backgroundColor: colors.overlayLight }]}
+          onPress={() => setIsMenuOpen(false)}
+        />
+      )}
+
+      {/* Slide-in Menu */}
+      <Animated.View
+        style={[
+          styles.slideMenu,
+          {
+            backgroundColor: colors.bgSecondary,
+            transform: [{ translateX: menuAnimation }],
+          },
+        ]}
+      >
+        <SafeAreaView style={styles.slideMenuContent} edges={['top']}>
+          {/* User Info */}
+          {userInfo && (
+            <View style={[styles.menuUserSection, { borderBottomColor: colors.border }]}>
+              <View style={[styles.menuAvatar, { backgroundColor: colors.bgTertiary }]}>
+                <Ionicons name="person" size={28} color={colors.textMuted} />
+              </View>
+              <View style={styles.menuUserInfo}>
+                <Text style={[styles.menuUserName, { color: colors.textPrimary }]}>{userInfo.displayName}</Text>
+                <Text style={[styles.menuUserEmail, { color: colors.textMuted }]}>{userInfo.email}</Text>
+              </View>
+            </View>
+          )}
+
+          <ScrollView style={styles.menuScrollView}>
+            {/* Display Settings */}
+            <View style={styles.menuSection}>
+              <Text style={[styles.menuSectionTitle, { color: colors.textMuted }]}>
+                {t.menu.display}
+              </Text>
+
+              {/* Font Size */}
+              <View style={styles.menuSettingRow}>
+                <Text style={[styles.menuSettingLabel, { color: colors.textPrimary }]}>
+                  {t.fontSettings.fontSize}
+                </Text>
+                <View style={styles.menuSettingOptions}>
+                  {fontSizeOptions.map(option => (
+                    <TouchableOpacity
+                      key={option.value}
+                      style={[
+                        styles.menuOption,
+                        {
+                          backgroundColor: fontSettings.fontSize === option.value ? colors.accentMuted : colors.bgTertiary,
+                        }
+                      ]}
+                      onPress={() => setFontSize(option.value)}
+                    >
+                      <Text style={[
+                        styles.menuOptionText,
+                        { color: fontSettings.fontSize === option.value ? colors.accent : colors.textSecondary }
+                      ]}>
+                        {fontSizeLabels[option.labelKey]}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              </View>
+
+              {/* Font Family */}
+              <View style={styles.menuSettingRow}>
+                <Text style={[styles.menuSettingLabel, { color: colors.textPrimary }]}>
+                  {t.fontSettings.fontFamily}
+                </Text>
+                <View style={styles.menuSettingOptions}>
+                  {fontFamilyOptions.map(option => (
+                    <TouchableOpacity
+                      key={option.value}
+                      style={[
+                        styles.menuOption,
+                        {
+                          backgroundColor: fontSettings.fontFamily === option.value ? colors.accentMuted : colors.bgTertiary,
+                        }
+                      ]}
+                      onPress={() => setFontFamily(option.value)}
+                    >
+                      <Text style={[
+                        styles.menuOptionText,
+                        { color: fontSettings.fontFamily === option.value ? colors.accent : colors.textSecondary }
+                      ]}>
+                        {fontFamilyLabels[option.labelKey]}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              </View>
+            </View>
+
+            {/* Theme */}
+            <View style={styles.menuSection}>
+              <Text style={[styles.menuSectionTitle, { color: colors.textMuted }]}>
                 {t.settings.theme}
               </Text>
-              <View style={styles.settingsOptions}>
+              <View style={styles.menuSettingOptions}>
                 <TouchableOpacity
                   style={[
-                    styles.settingsOption,
+                    styles.menuOption,
+                    styles.menuOptionWide,
                     { backgroundColor: themeMode === 'light' ? colors.accentMuted : colors.bgTertiary }
                   ]}
                   onPress={() => setTheme('light')}
                 >
                   <Ionicons name="sunny-outline" size={18} color={themeMode === 'light' ? colors.accent : colors.textSecondary} />
-                  <Text style={[styles.settingsOptionText, { color: themeMode === 'light' ? colors.accent : colors.textSecondary }]}>
+                  <Text style={[styles.menuOptionText, { color: themeMode === 'light' ? colors.accent : colors.textSecondary }]}>
                     {t.settings.light}
                   </Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={[
-                    styles.settingsOption,
+                    styles.menuOption,
+                    styles.menuOptionWide,
                     { backgroundColor: themeMode === 'dark' ? colors.accentMuted : colors.bgTertiary }
                   ]}
                   onPress={() => setTheme('dark')}
                 >
                   <Ionicons name="moon-outline" size={18} color={themeMode === 'dark' ? colors.accent : colors.textSecondary} />
-                  <Text style={[styles.settingsOptionText, { color: themeMode === 'dark' ? colors.accent : colors.textSecondary }]}>
+                  <Text style={[styles.menuOptionText, { color: themeMode === 'dark' ? colors.accent : colors.textSecondary }]}>
                     {t.settings.dark}
                   </Text>
                 </TouchableOpacity>
               </View>
             </View>
 
-            {/* Language Setting */}
-            <View style={styles.settingsSection}>
-              <Text style={[styles.settingsSectionTitle, { color: colors.textMuted }]}>
+            {/* Language */}
+            <View style={styles.menuSection}>
+              <Text style={[styles.menuSectionTitle, { color: colors.textMuted }]}>
                 {t.settings.language}
               </Text>
-              <View style={styles.settingsOptions}>
+              <View style={styles.menuSettingOptions}>
                 <TouchableOpacity
                   style={[
-                    styles.settingsOption,
+                    styles.menuOption,
+                    styles.menuOptionWide,
                     { backgroundColor: language === 'en' ? colors.accentMuted : colors.bgTertiary }
                   ]}
                   onPress={() => setLanguage('en')}
                 >
-                  <Text style={[styles.settingsOptionText, { color: language === 'en' ? colors.accent : colors.textSecondary }]}>
+                  <Text style={[styles.menuOptionText, { color: language === 'en' ? colors.accent : colors.textSecondary }]}>
                     English
                   </Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={[
-                    styles.settingsOption,
+                    styles.menuOption,
+                    styles.menuOptionWide,
                     { backgroundColor: language === 'ja' ? colors.accentMuted : colors.bgTertiary }
                   ]}
                   onPress={() => setLanguage('ja')}
                 >
-                  <Text style={[styles.settingsOptionText, { color: language === 'ja' ? colors.accent : colors.textSecondary }]}>
+                  <Text style={[styles.menuOptionText, { color: language === 'ja' ? colors.accent : colors.textSecondary }]}>
                     日本語
                   </Text>
                 </TouchableOpacity>
               </View>
             </View>
 
-            {/* About Link */}
-            <TouchableOpacity
-              style={[styles.settingsMenuItem, { borderTopColor: colors.border }]}
-              onPress={() => { setIsSettingsMenuOpen(false); handleOpenAbout(); }}
-            >
-              <Ionicons name="information-circle-outline" size={20} color={colors.textSecondary} />
-              <Text style={[styles.settingsMenuItemText, { color: colors.textPrimary }]}>{t.home.about}</Text>
-            </TouchableOpacity>
-          </View>
-        </>
-      )}
+            {/* Actions */}
+            <View style={[styles.menuSection, { borderTopColor: colors.border, borderTopWidth: 1, marginTop: spacing.md }]}>
+              <TouchableOpacity
+                style={styles.menuItem}
+                onPress={handleLocalFile}
+              >
+                <Ionicons name="folder-outline" size={20} color={colors.textSecondary} />
+                <Text style={[styles.menuItemText, { color: colors.textPrimary }]}>{t.home.openLocal}</Text>
+              </TouchableOpacity>
 
-      {/* User Menu */}
-      {isAuthenticated && isUserMenuOpen && (
-        <>
-          <Pressable
-            style={[styles.userMenuOverlay, { backgroundColor: colors.overlayLight }]}
-            onPress={() => setIsUserMenuOpen(false)}
-          />
-          <View style={[styles.userMenu, { backgroundColor: colors.bgSecondary, borderColor: colors.border }]}>
-            {userInfo && (
-              <View style={[styles.userMenuInfo, { borderBottomColor: colors.border }]}>
-                <View style={[styles.userMenuAvatar, { backgroundColor: colors.bgTertiary }]}>
-                  <Ionicons name="person" size={24} color={colors.textMuted} />
-                </View>
-                <View style={styles.userMenuDetails}>
-                  <Text style={[styles.userMenuName, { color: colors.textPrimary }]}>{userInfo.displayName}</Text>
-                  <Text style={[styles.userMenuEmail, { color: colors.textMuted }]}>{userInfo.email}</Text>
-                </View>
-              </View>
-            )}
-            <TouchableOpacity style={styles.userMenuItem} onPress={handleLocalFile}>
-              <Ionicons name="folder-outline" size={20} color={colors.textSecondary} />
-              <Text style={[styles.userMenuText, { color: colors.textPrimary }]}>{t.home.openLocal}</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.userMenuItem, styles.userMenuLogout]}
-              onPress={logout}
-            >
-              <Ionicons name="log-out-outline" size={20} color={colors.error} />
-              <Text style={[styles.userMenuText, { color: colors.error }]}>{t.home.signOut}</Text>
-            </TouchableOpacity>
-          </View>
-        </>
-      )}
+              <TouchableOpacity
+                style={styles.menuItem}
+                onPress={handleOpenAbout}
+              >
+                <Ionicons name="information-circle-outline" size={20} color={colors.textSecondary} />
+                <Text style={[styles.menuItemText, { color: colors.textPrimary }]}>{t.home.about}</Text>
+              </TouchableOpacity>
+            </View>
+
+            {/* Sign Out */}
+            <View style={[styles.menuSection, { borderTopColor: colors.border, borderTopWidth: 1, marginTop: spacing.md }]}>
+              <TouchableOpacity
+                style={styles.menuItem}
+                onPress={handleLogout}
+              >
+                <Ionicons name="log-out-outline" size={20} color={colors.error} />
+                <Text style={[styles.menuItemText, { color: colors.error }]}>{t.home.signOut}</Text>
+              </TouchableOpacity>
+            </View>
+          </ScrollView>
+        </SafeAreaView>
+      </Animated.View>
 
       {/* Search FAB */}
       {isAuthenticated && (
@@ -422,38 +556,43 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   header: {
-    paddingHorizontal: spacing.xl,
-    paddingVertical: spacing.md,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
     borderBottomWidth: 1,
-  },
-  headerContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  headerActions: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm,
+    gap: spacing.md,
   },
   menuButton: {
-    width: 36,
-    height: 36,
+    width: 40,
+    height: 40,
     borderRadius: borderRadius.md,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  logo: {
-    width: 160,
-    height: 40,
-  },
-  userAvatar: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+  headerSearchBar: {
+    flex: 1,
+    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
     borderWidth: 1,
+    borderRadius: borderRadius.lg,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    gap: spacing.sm,
+  },
+  headerSearchText: {
+    flex: 1,
+    fontSize: fontSize.base,
+  },
+  kbd: {
+    paddingHorizontal: spacing.sm,
+    paddingVertical: 2,
+    borderWidth: 1,
+    borderRadius: borderRadius.sm,
+  },
+  kbdText: {
+    fontSize: fontSize.xs,
+    fontFamily: Platform.OS === 'web' ? 'monospace' : undefined,
   },
   content: {
     flex: 1,
@@ -564,29 +703,15 @@ const styles = StyleSheet.create({
   authenticatedContent: {
     flex: 1,
   },
-  searchBox: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderRadius: borderRadius.lg,
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.md,
-    marginBottom: spacing.xl,
-    gap: spacing.md,
-  },
-  searchPlaceholder: {
+  emptyState: {
     flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: spacing.md,
+    paddingVertical: spacing['2xl'],
+  },
+  emptyStateText: {
     fontSize: fontSize.base,
-  },
-  kbd: {
-    paddingHorizontal: spacing.sm,
-    paddingVertical: spacing.xs,
-    borderWidth: 1,
-    borderRadius: borderRadius.sm,
-  },
-  kbdText: {
-    fontSize: fontSize.xs,
-    fontFamily: Platform.OS === 'web' ? 'monospace' : undefined,
   },
 
   // Recent Files
@@ -639,116 +764,97 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
 
-  // Settings Menu
-  settingsMenuOverlay: {
+  // Menu Overlay
+  menuOverlay: {
     ...StyleSheet.absoluteFillObject,
-    zIndex: 896,
+    zIndex: 998,
   },
-  settingsMenu: {
+
+  // Slide-in Menu
+  slideMenu: {
     position: 'absolute',
-    top: 70,
-    right: spacing.xl,
-    borderWidth: 1,
-    borderRadius: borderRadius.lg,
+    left: 0,
+    top: 0,
+    bottom: 0,
+    width: MENU_WIDTH,
+    zIndex: 999,
+    ...shadows.xl,
+  },
+  slideMenuContent: {
+    flex: 1,
+  },
+  menuScrollView: {
+    flex: 1,
+  },
+  menuUserSection: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: spacing.lg,
+    borderBottomWidth: 1,
+    gap: spacing.md,
+  },
+  menuAvatar: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  menuUserInfo: {
+    flex: 1,
+  },
+  menuUserName: {
+    fontSize: fontSize.base,
+    fontWeight: fontWeight.semibold,
+  },
+  menuUserEmail: {
+    fontSize: fontSize.sm,
+    marginTop: 2,
+  },
+  menuSection: {
     padding: spacing.md,
-    minWidth: 220,
-    zIndex: 897,
-    ...shadows.lg,
   },
-  settingsSection: {
-    marginBottom: spacing.md,
-  },
-  settingsSectionTitle: {
+  menuSectionTitle: {
     fontSize: fontSize.xs,
     fontWeight: fontWeight.medium,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
     marginBottom: spacing.sm,
   },
-  settingsOptions: {
+  menuSettingRow: {
+    marginBottom: spacing.md,
+  },
+  menuSettingLabel: {
+    fontSize: fontSize.sm,
+    marginBottom: spacing.xs,
+  },
+  menuSettingOptions: {
     flexDirection: 'row',
     gap: spacing.sm,
   },
-  settingsOption: {
+  menuOption: {
     flex: 1,
-    flexDirection: 'row',
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.sm,
+    borderRadius: borderRadius.md,
     alignItems: 'center',
     justifyContent: 'center',
-    gap: spacing.xs,
-    paddingVertical: spacing.sm,
-    paddingHorizontal: spacing.md,
-    borderRadius: borderRadius.md,
   },
-  settingsOptionText: {
+  menuOptionWide: {
+    flexDirection: 'row',
+    gap: spacing.xs,
+  },
+  menuOptionText: {
     fontSize: fontSize.sm,
     fontWeight: fontWeight.medium,
   },
-  settingsMenuItem: {
+  menuItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: spacing.md,
-    paddingTop: spacing.md,
-    marginTop: spacing.sm,
-    borderTopWidth: 1,
-  },
-  settingsMenuItemText: {
-    fontSize: fontSize.base,
-  },
-
-  // User Menu
-  userMenuOverlay: {
-    ...StyleSheet.absoluteFillObject,
-    zIndex: 898,
-  },
-  userMenu: {
-    position: 'absolute',
-    top: 70,
-    right: spacing.xl,
-    borderWidth: 1,
-    borderRadius: borderRadius.lg,
-    padding: spacing.sm,
-    minWidth: 240,
-    zIndex: 899,
-    ...shadows.lg,
-  },
-  userMenuInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: spacing.md,
     paddingVertical: spacing.md,
-    borderBottomWidth: 1,
-    marginBottom: spacing.sm,
     gap: spacing.md,
   },
-  userMenuAvatar: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  userMenuDetails: {
-    flex: 1,
-  },
-  userMenuName: {
+  menuItemText: {
     fontSize: fontSize.base,
-    fontWeight: fontWeight.medium,
-  },
-  userMenuEmail: {
-    fontSize: fontSize.xs,
-  },
-  userMenuItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-    borderRadius: borderRadius.md,
-    gap: spacing.md,
-  },
-  userMenuText: {
-    fontSize: fontSize.base,
-  },
-  userMenuLogout: {
-    marginTop: spacing.xs,
   },
 });

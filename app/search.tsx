@@ -13,6 +13,7 @@ import {
   ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
+  Pressable,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
@@ -44,6 +45,19 @@ export default function SearchScreen() {
       return () => clearTimeout(timer);
     }
   }, [isAuthenticated]);
+
+  // ESC key to close
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        handleClose();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   const handleSearch = useCallback(
     (text: string) => {
@@ -150,6 +164,11 @@ export default function SearchScreen() {
               autoCorrect={false}
               returnKeyType="search"
               editable={isAuthenticated}
+              onKeyPress={(e) => {
+                if (e.nativeEvent.key === 'Escape') {
+                  handleClose();
+                }
+              }}
             />
             {isLoading && <ActivityIndicator size="small" color={colors.accent} />}
           </View>
@@ -158,8 +177,8 @@ export default function SearchScreen() {
           </TouchableOpacity>
         </View>
 
-        {/* Search Body */}
-        <View style={styles.body}>
+        {/* Search Body - tap outside to close */}
+        <Pressable style={styles.body} onPress={handleClose}>
           {!isAuthenticated ? (
             <View style={styles.authPrompt}>
               <Text style={[styles.authText, { color: colors.textSecondary }]}>
@@ -212,7 +231,7 @@ export default function SearchScreen() {
               }
             />
           )}
-        </View>
+        </Pressable>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
