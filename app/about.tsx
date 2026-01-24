@@ -176,6 +176,30 @@ export default function AboutScreen() {
           </Text>
         </View>
 
+        {/* License */}
+        <View style={styles.section}>
+          <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>{t.about.license}</Text>
+          <Text style={[styles.sectionText, { color: colors.textSecondary }]}>
+            {t.about.licenseDesc}
+          </Text>
+          <View style={styles.licenseButtons}>
+            <TouchableOpacity
+              style={[styles.licenseButton, { backgroundColor: colors.bgTertiary, borderColor: colors.border }]}
+              onPress={() => router.push('/license')}
+            >
+              <Ionicons name="document-text-outline" size={18} color={colors.textSecondary} />
+              <Text style={[styles.licenseButtonText, { color: colors.textSecondary }]}>{t.about.viewLicense}</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.licenseButton, { backgroundColor: colors.bgTertiary, borderColor: colors.border }]}
+              onPress={() => router.push('/third-party-licenses')}
+            >
+              <Ionicons name="library-outline" size={18} color={colors.textSecondary} />
+              <Text style={[styles.licenseButtonText, { color: colors.textSecondary }]}>{t.about.viewThirdPartyLicenses}</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+
         {/* Footer */}
         <View style={[styles.footer, { borderTopColor: colors.border }]}>
           <Text style={[styles.footerText, { color: colors.textMuted }]}>
@@ -301,6 +325,27 @@ const styles = StyleSheet.create({
   },
   chipText: {
     fontSize: fontSize.sm,
+  },
+
+  // License Buttons
+  licenseButtons: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.sm,
+    marginTop: spacing.md,
+  },
+  licenseButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    borderWidth: 1,
+    borderRadius: borderRadius.md,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+  },
+  licenseButtonText: {
+    fontSize: fontSize.sm,
+    fontWeight: fontWeight.medium,
   },
 
   // Footer
