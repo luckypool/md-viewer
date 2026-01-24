@@ -2,7 +2,7 @@
  * MD Viewer - Viewer Screen
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   View,
   Text,
@@ -12,6 +12,8 @@ import {
   ActivityIndicator,
   Modal,
   Pressable,
+  Platform,
+  Animated,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
@@ -42,6 +44,10 @@ export default function ViewerScreen() {
   const [isLoading, setIsLoading] = useState(!params.content);
   const [error, setError] = useState<string | null>(null);
   const [showFileInfo, setShowFileInfo] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [showHeader, setShowHeader] = useState(true);
+  const headerOpacity = useRef(new Animated.Value(1)).current;
+  const hideHeaderTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     if (params.source === 'google-drive' && !params.content) {
@@ -79,6 +85,128 @@ export default function ViewerScreen() {
       setIsLoading(false);
     }
   };
+
+  // Fullscreen mode handlers
+  const enterFullscreen = useCallback(async () => {
+    setIsFullscreen(true);
+    setShowHeader(false);
+
+    // Use Fullscreen API on supported platforms (Android Chrome, Desktop)
+    if (Platform.OS === 'web' && document.documentElement.requestFullscreen) {
+      try {
+        await document.documentElement.requestFullscreen();
+      } catch (e) {
+        // Fullscreen API not supported or blocked, continue with header-hide mode
+      }
+    }
+  }, []);
+
+  const exitFullscreen = useCallback(async () => {
+    setIsFullscreen(false);
+    setShowHeader(true);
+
+    if (Platform.OS === 'web' && document.fullscreenElement) {
+      try {
+        await document.exitFullscreen();
+      } catch (e) {
+        // Ignore errors
+      }
+    }
+  }, []);
+
+  const toggleFullscreen = useCallback(() => {
+    if (isFullscreen) {
+      exitFullscreen();
+    } else {
+      enterFullscreen();
+    }
+  }, [isFullscreen, enterFullscreen, exitFullscreen]);
+
+  // Handle content tap in fullscreen mode
+  const handleContentTap = useCallback(() => {
+    if (!isFullscreen) return;
+
+    // Clear existing timeout
+    if (hideHeaderTimeout.current) {
+      clearTimeout(hideHeaderTimeout.current);
+    }
+
+    if (showHeader) {
+      // Hide header
+      Animated.timing(headerOpacity, {
+        toValue: 0,
+        duration: 200,
+        useNativeDriver: true,
+      }).start(() => setShowHeader(false));
+    } else {
+      // Show header
+      setShowHeader(true);
+      Animated.timing(headerOpacity, {
+        toValue: 1,
+        duration: 200,
+        useNativeDriver: true,
+      }).start();
+
+      // Auto-hide after 3 seconds
+      hideHeaderTimeout.current = setTimeout(() => {
+        if (isFullscreen) {
+          Animated.timing(headerOpacity, {
+            toValue: 0,
+            duration: 200,
+            useNativeDriver: true,
+          }).start(() => setShowHeader(false));
+        }
+      }, 3000);
+    }
+  }, [isFullscreen, showHeader, headerOpacity]);
+
+  // Listen for fullscreen change events (e.g., user presses Escape)
+  useEffect(() => {
+    if (Platform.OS !== 'web') return;
+
+    const handleFullscreenChange = () => {
+      if (!document.fullscreenElement && isFullscreen) {
+        setIsFullscreen(false);
+        setShowHeader(true);
+        Animated.timing(headerOpacity, {
+          toValue: 1,
+          duration: 200,
+          useNativeDriver: true,
+        }).start();
+      }
+    };
+
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
+  }, [isFullscreen, headerOpacity]);
+
+  // Keyboard shortcut: F to toggle fullscreen
+  useEffect(() => {
+    if (Platform.OS !== 'web') return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'f' || e.key === 'F') {
+        // Don't trigger if user is typing in an input
+        if ((e.target as HTMLElement).tagName === 'INPUT' || (e.target as HTMLElement).tagName === 'TEXTAREA') {
+          return;
+        }
+        e.preventDefault();
+        toggleFullscreen();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [toggleFullscreen]);
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (hideHeaderTimeout.current) {
+        clearTimeout(hideHeaderTimeout.current);
+      }
+    };
+  }, []);
 
   const handleDownloadPdf = async () => {
     if (content && params.name) {
@@ -120,26 +248,51 @@ export default function ViewerScreen() {
   };
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.bgPrimary }]} edges={['top']}>
+    <SafeAreaView
+      style={[styles.container, { backgroundColor: colors.bgPrimary }]}
+      edges={isFullscreen ? [] : ['top']}
+    >
       {/* Header */}
-      <View style={[styles.header, { borderBottomColor: colors.border, backgroundColor: colors.bgSecondary }]}>
-        <TouchableOpacity style={styles.backButton} onPress={handleBack}>
-          <Ionicons name="chevron-back" size={28} color={colors.textPrimary} />
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={styles.headerTitle}
-          onPress={() => setShowFileInfo(true)}
-          activeOpacity={0.7}
+      {(!isFullscreen || showHeader) && (
+        <Animated.View
+          style={[
+            styles.header,
+            {
+              borderBottomColor: colors.border,
+              backgroundColor: colors.bgSecondary,
+              opacity: isFullscreen ? headerOpacity : 1,
+            },
+            isFullscreen && styles.fullscreenHeader,
+          ]}
         >
-          <Text style={[styles.fileName, { color: colors.textPrimary }]} numberOfLines={1}>
-            {params.name}
-          </Text>
-          <Ionicons name="chevron-down" size={16} color={colors.textMuted} />
-        </TouchableOpacity>
+          <TouchableOpacity style={styles.backButton} onPress={isFullscreen ? exitFullscreen : handleBack}>
+            <Ionicons
+              name={isFullscreen ? "close" : "chevron-back"}
+              size={28}
+              color={colors.textPrimary}
+            />
+          </TouchableOpacity>
 
-        <View style={styles.headerSpacer} />
-      </View>
+          <TouchableOpacity
+            style={styles.headerTitle}
+            onPress={() => setShowFileInfo(true)}
+            activeOpacity={0.7}
+          >
+            <Text style={[styles.fileName, { color: colors.textPrimary }]} numberOfLines={1}>
+              {params.name}
+            </Text>
+            <Ionicons name="chevron-down" size={16} color={colors.textMuted} />
+          </TouchableOpacity>
+
+          <TouchableOpacity style={styles.fullscreenButton} onPress={toggleFullscreen}>
+            <Ionicons
+              name={isFullscreen ? "contract-outline" : "expand-outline"}
+              size={24}
+              color={colors.textPrimary}
+            />
+          </TouchableOpacity>
+        </Animated.View>
+      )}
 
       {/* Content */}
       {isLoading ? (
@@ -159,15 +312,23 @@ export default function ViewerScreen() {
           </TouchableOpacity>
         </View>
       ) : content ? (
-        <ScrollView
-          style={styles.scrollView}
-          contentContainerStyle={styles.scrollContent}
-          showsVerticalScrollIndicator={false}
+        <Pressable
+          style={styles.contentPressable}
+          onPress={handleContentTap}
         >
-          <Card style={styles.contentCard}>
-            <MarkdownRenderer content={content} onLinkPress={handleLinkPress} themeMode={themeMode} />
-          </Card>
-        </ScrollView>
+          <ScrollView
+            style={styles.scrollView}
+            contentContainerStyle={[
+              styles.scrollContent,
+              isFullscreen && styles.fullscreenContent,
+            ]}
+            showsVerticalScrollIndicator={!isFullscreen}
+          >
+            <Card style={isFullscreen ? { ...styles.contentCard, ...styles.fullscreenCard } : styles.contentCard}>
+              <MarkdownRenderer content={content} onLinkPress={handleLinkPress} themeMode={themeMode} />
+            </Card>
+          </ScrollView>
+        </Pressable>
       ) : (
         <View style={styles.emptyContainer}>
           <Ionicons name="document-outline" size={48} color={colors.textMuted} />
@@ -366,8 +527,18 @@ const styles = StyleSheet.create({
     fontWeight: fontWeight.medium,
     maxWidth: '80%',
   },
-  headerSpacer: {
+  fullscreenButton: {
     width: 44,
+    height: 44,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  fullscreenHeader: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    zIndex: 100,
   },
 
   // Loading
@@ -416,6 +587,9 @@ const styles = StyleSheet.create({
   },
 
   // Content
+  contentPressable: {
+    flex: 1,
+  },
   scrollView: {
     flex: 1,
   },
@@ -423,8 +597,16 @@ const styles = StyleSheet.create({
     padding: spacing.lg,
     paddingBottom: spacing['2xl'],
   },
+  fullscreenContent: {
+    paddingTop: spacing['2xl'],
+  },
   contentCard: {
     padding: spacing.lg,
+  },
+  fullscreenCard: {
+    maxWidth: 900,
+    alignSelf: 'center',
+    width: '100%',
   },
 
   // Dialog

@@ -42,6 +42,8 @@ export const ja: Translations = {
     authRequired: '認証が必要です。ホームに戻ってサインインしてください。',
     loadFailed: 'ファイルの読み込みに失敗しました',
     errorOccurred: 'エラーが発生しました',
+    fullscreen: '全画面',
+    exitFullscreen: '全画面を終了',
   },
 
   // Search Screen
