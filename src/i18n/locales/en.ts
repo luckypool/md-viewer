@@ -40,6 +40,8 @@ export const en = {
     authRequired: 'Authentication required. Please go back to home and sign in.',
     loadFailed: 'Failed to load file',
     errorOccurred: 'An error occurred',
+    fullscreen: 'Fullscreen',
+    exitFullscreen: 'Exit Fullscreen',
   },
 
   // Search Screen
@@ -194,6 +196,8 @@ export type Translations = {
     authRequired: string;
     loadFailed: string;
     errorOccurred: string;
+    fullscreen: string;
+    exitFullscreen: string;
   };
   search: {
     placeholder: string;
