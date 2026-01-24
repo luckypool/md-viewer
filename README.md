@@ -2,13 +2,12 @@
 
 # MD Viewer
 
-Google Drive やローカルに保存された Markdown ファイルをプレビューするアプリです。
+Google Drive やローカルに保存された Markdown ファイルをプレビューする Web アプリです。
 
 [![Expo](https://img.shields.io/badge/Expo-54-000020?logo=expo)](https://expo.dev/)
-[![React Native](https://img.shields.io/badge/React%20Native-0.81-61DAFB?logo=react)](https://reactnative.dev/)
+[![React Native Web](https://img.shields.io/badge/React%20Native%20Web-0.81-61DAFB?logo=react)](https://necolas.github.io/react-native-web/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.9-3178C6?logo=typescript)](https://www.typescriptlang.org/)
-
-**Web** | **iOS** | **Android**
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 </div>
 
@@ -22,10 +21,12 @@ Google Drive やローカルに保存された Markdown ファイルをプレビ
   - テーブル
   - タスクリスト
   - 打ち消し線
-- 📈 Mermaid ダイアグラム対応（Web）
-- 📄 PDF 出力・共有機能
+- 📈 Mermaid ダイアグラム対応
+- 📄 PDF 出力機能
 - 🕐 最近使ったファイルの履歴
-- ⌨️ キーボードショートカット（`⌘K` / `Ctrl+K` で検索、Web のみ）
+- ⌨️ キーボードショートカット（`⌘K` / `Ctrl+K` で検索）
+- 🌙 ダークモード / ライトモード切り替え
+- 🌐 日本語 / 英語 切り替え
 
 ## セットアップ
 
@@ -46,8 +47,6 @@ npm install
 
 ### 3. OAuth 2.0 クライアント ID の作成
 
-#### Web 用
-
 1. **APIs & Services** → **Credentials** に移動
 2. **Create Credentials** → **OAuth client ID** を選択
 3. **Application type**: Web application
@@ -55,13 +54,6 @@ npm install
    - `http://localhost:8081`（開発用）
    - 本番ドメイン（デプロイ後）
 5. **Create** をクリックし、**Client ID** を控える
-
-#### iOS / Android 用（オプション）
-
-1. **Create Credentials** → **OAuth client ID** を選択
-2. **Application type**: iOS または Android
-3. Bundle ID / Package name を入力
-4. **Create** をクリックし、**Client ID** を控える
 
 ### 4. API キーの作成
 
@@ -85,52 +77,48 @@ npm install
 ```bash
 EXPO_PUBLIC_GOOGLE_API_KEY=your_api_key_here
 EXPO_PUBLIC_GOOGLE_CLIENT_ID=your_web_client_id_here
-EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID=your_ios_client_id_here      # iOS 用（オプション）
-EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID=your_android_client_id  # Android 用（オプション）
 ```
 
 ### 7. 開発サーバーの起動
 
 ```bash
-# 全プラットフォーム
+# Web 開発サーバー
 npm start
-
-# Web のみ
+# または
 npm run web
-
-# iOS のみ
-npm run ios
-
-# Android のみ
-npm run android
 ```
 
 ## 使い方
 
 ### Google Drive から開く
 
-1. 「Google でログイン」ボタンをタップ
+1. 「Google でサインイン」ボタンをクリック
 2. Google アカウントでログイン
-3. 検索ボックスをタップ（Web: `⌘K` / `Ctrl+K`）
+3. 検索ボックスをクリック（または `⌘K` / `Ctrl+K`）
 4. ファイル名を入力して検索
 5. ファイルを選択するとプレビューが表示されます
 
 ### ローカルファイルを開く
 
-1. 「ローカルファイルを開く」ボタンをタップ
+1. 「ローカルファイルを開く」ボタンをクリック
 2. Markdown ファイル (`.md`) を選択
 3. プレビューが表示されます
 
 ### 最近使ったファイル
 
 ログイン後、ホーム画面に最近開いたファイルの履歴が表示されます。
-タップするだけで素早くファイルを開くことができます。
+クリックするだけで素早くファイルを開くことができます。
 
-### PDF として出力・共有
+### テーマ・言語の切り替え
 
-1. Markdown ファイルを開いた状態で、共有ボタンをタップ
-2. iOS / Android では共有シートが表示されます
-3. Web では PDF ファイルがダウンロードされます
+ヘッダー右側のアイコンから切り替え可能です:
+- 🌙/☀️ ダークモード / ライトモード
+- EN/JA 英語 / 日本語
+
+### PDF として出力
+
+1. Markdown ファイルを開いた状態で、共有ボタンをクリック
+2. PDF ファイルがダウンロードされます
 
 ## プロジェクト構造
 
@@ -140,17 +128,26 @@ md-viewer/
 │   ├── _layout.tsx           # ルートレイアウト
 │   ├── index.tsx             # ホーム画面
 │   ├── viewer.tsx            # Markdown 表示
-│   └── search.tsx            # Google Drive 検索
+│   ├── search.tsx            # Google Drive 検索
+│   ├── about.tsx             # アプリについて
+│   └── license.tsx           # ライセンス表示
 ├── src/
 │   ├── components/
 │   │   ├── ui/               # 共通 UI コンポーネント
-│   │   └── markdown/         # Markdown レンダラー（プラットフォーム別）
-│   ├── hooks/                # カスタムフック（プラットフォーム別）
-│   │   ├── useGoogleAuth     # Google OAuth
+│   │   └── markdown/         # Markdown レンダラー
+│   ├── contexts/             # React Context
+│   │   ├── ThemeContext      # テーマ管理
+│   │   └── LanguageContext   # 言語管理
+│   ├── hooks/                # カスタムフック
+│   │   ├── useGoogleAuth     # Google OAuth (GIS)
 │   │   ├── useFilePicker     # ファイル選択
+│   │   ├── useTheme          # テーマフック
+│   │   ├── useLanguage       # 言語フック
 │   │   └── useShare          # PDF 出力・共有
+│   ├── i18n/                 # 国際化
+│   │   └── locales/          # 翻訳ファイル（en, ja）
 │   ├── services/             # サービス層
-│   │   ├── storage.ts        # ストレージ抽象化
+│   │   ├── storage.ts        # localStorage ラッパー
 │   │   ├── fileHistory.ts    # ファイル履歴
 │   │   └── googleDrive.ts    # Drive API
 │   ├── theme/                # テーマ定義
@@ -160,41 +157,30 @@ md-viewer/
 └── package.json
 ```
 
-## プラットフォーム別実装
-
-ファイル拡張子でプラットフォームを自動分岐:
-
-- `*.web.ts` / `*.web.tsx` - Web 専用
-- `*.native.ts` / `*.native.tsx` - iOS / Android 専用
-- `*.ts` / `*.tsx` - 共通エントリポイント
-
 ## 技術スタック
 
-- **Expo SDK 54** + **React Native 0.81**
+- **Expo SDK 54** + **React Native Web**
 - **Expo Router 6** - ファイルベースルーティング
 - **TypeScript 5.9**
-- **react-markdown** / **react-native-markdown-display** - Markdown レンダリング
-- **expo-auth-session** - Native OAuth
-- **expo-document-picker** - ファイル選択
-- **expo-print** / **expo-sharing** - PDF 出力・共有
+- **react-markdown** - Markdown レンダリング
+- **react-syntax-highlighter** - コードハイライト
+- **mermaid** - ダイアグラム表示
+- **html2pdf.js** - PDF 出力
+- **Google Identity Services (GIS)** - OAuth 認証
 - **Google Drive API** - ファイル検索・取得
 
 ## デプロイ
 
-### Web（Vercel）
+### Vercel
 
 ```bash
-npx expo export -p web
+npm run build
 ```
 
 `vercel.json` が設定済みです。
 
-### iOS / Android
-
-```bash
-npx eas build
-```
-
 ## ライセンス
 
-MIT
+[MIT License](./LICENSE)
+
+Copyright (c) 2025 luckypool

@@ -111,6 +111,12 @@ export const ja: Translations = {
     privacy: 'プライバシーとセキュリティ',
     privacyDesc:
       'MD ViewerはGoogle Driveファイルへの読み取り専用アクセスのみを要求します。ドキュメントは当社のサーバーに保存されることはなく、Google Driveから直接取得してブラウザでレンダリングされます。認証トークンはブラウザのローカルストレージに安全に保存されます。',
+    license: 'ライセンス',
+    licenseDesc: 'MD ViewerはMITライセンスの下で公開されているオープンソースソフトウェアです。',
+    viewLicense: 'ライセンスを見る',
+    thirdPartyLicenses: 'サードパーティライセンス',
+    thirdPartyDesc: 'このアプリケーションは以下のオープンソースライブラリを使用しています。',
+    viewThirdPartyLicenses: 'サードパーティライセンスを見る',
     footer: 'Expo と React Native Web で構築',
   },
 
