@@ -29,7 +29,9 @@ export default function SearchScreen() {
     isLoading,
     isAuthenticated,
     results,
+    recentFiles,
     search,
+    loadRecentFiles,
     authenticate,
     clearResults,
   } = useGoogleAuth();
@@ -42,9 +44,11 @@ export default function SearchScreen() {
       const timer = setTimeout(() => {
         inputRef.current?.focus();
       }, 100);
+      // 認証済みなら最近のファイルを自動取得
+      loadRecentFiles();
       return () => clearTimeout(timer);
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, loadRecentFiles]);
 
   // ESC key to close
   useEffect(() => {
@@ -190,28 +194,39 @@ export default function SearchScreen() {
               </TouchableOpacity>
             </View>
           ) : query.length === 0 ? (
-            <View style={styles.emptyState}>
-              <View style={styles.emptyIcon}>
-                <Ionicons name="search-outline" size={48} color={colors.textMuted} />
+            recentFiles.length > 0 ? (
+              <FlatList
+                data={recentFiles}
+                keyExtractor={(item) => item.id}
+                renderItem={renderResultItem}
+                contentContainerStyle={styles.resultsList}
+                showsVerticalScrollIndicator={false}
+                ListHeaderComponent={
+                  <View style={styles.recentHeader}>
+                    <Text style={[styles.recentTitle, { color: colors.textPrimary }]}>
+                      {t.search.recentTitle}
+                    </Text>
+                    <Text style={[styles.recentHint, { color: colors.textMuted }]}>
+                      {t.search.recentHint}
+                    </Text>
+                  </View>
+                }
+              />
+            ) : isLoading ? (
+              <View style={styles.emptyState}>
+                <ActivityIndicator size="large" color={colors.accent} />
               </View>
-              <Text style={[styles.emptyTitle, { color: colors.textSecondary }]}>{t.search.emptyTitle}</Text>
-              <Text style={[styles.emptyHint, { color: colors.textMuted }]}>
-                {t.search.emptyHint}
-              </Text>
-
-              {/* Privacy Notice */}
-              <View style={[styles.privacyNotice, { backgroundColor: colors.accentMuted, borderColor: colors.accent }]}>
-                <Ionicons name="shield-checkmark-outline" size={20} color={colors.accent} />
-                <View style={styles.privacyContent}>
-                  <Text style={[styles.privacyTitle, { color: colors.accent }]}>
-                    {t.search.privacyTitle}
-                  </Text>
-                  <Text style={[styles.privacyDesc, { color: colors.textSecondary }]}>
-                    {t.search.privacyDesc}
-                  </Text>
+            ) : (
+              <View style={styles.emptyState}>
+                <View style={styles.emptyIcon}>
+                  <Ionicons name="document-outline" size={48} color={colors.textMuted} />
                 </View>
+                <Text style={[styles.emptyTitle, { color: colors.textSecondary }]}>{t.search.noRecentFiles}</Text>
+                <Text style={[styles.emptyHint, { color: colors.textMuted }]}>
+                  {t.search.emptyHint}
+                </Text>
               </View>
-            </View>
+            )
           ) : query.length < 2 ? (
             <View style={styles.messageContainer}>
               <Text style={[styles.messageText, { color: colors.textSecondary }]}>{t.search.minChars}</Text>
@@ -368,6 +383,21 @@ const styles = StyleSheet.create({
   },
   messageText: {
     fontSize: fontSize.base,
+  },
+
+  // Recent Files Header
+  recentHeader: {
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    marginBottom: spacing.xs,
+  },
+  recentTitle: {
+    fontSize: fontSize.lg,
+    fontWeight: fontWeight.semibold,
+  },
+  recentHint: {
+    fontSize: fontSize.sm,
+    marginTop: spacing.xs,
   },
 
   // Results
