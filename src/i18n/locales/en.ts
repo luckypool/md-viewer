@@ -58,6 +58,9 @@ export const en = {
     resultsCount: '{count} results',
     privacyTitle: 'Your Privacy Matters',
     privacyDesc: 'Files are fetched directly from Google Drive and rendered in your browser. Nothing is stored on our servers.',
+    recentTitle: 'Recent Files',
+    recentHint: 'Showing recently modified Markdown files',
+    noRecentFiles: 'No Markdown files found',
   },
 
   // About Screen
@@ -212,6 +215,9 @@ export type Translations = {
     resultsCount: string;
     privacyTitle: string;
     privacyDesc: string;
+    recentTitle: string;
+    recentHint: string;
+    noRecentFiles: string;
   };
   about: {
     title: string;

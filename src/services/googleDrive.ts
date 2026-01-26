@@ -144,6 +144,51 @@ export async function fetchFileInfo(
 }
 
 /**
+ * 最近更新されたMarkdownファイルを取得（更新日順）
+ */
+export async function listRecentMarkdownFiles(
+  accessToken: string,
+  maxResults: number = 20
+): Promise<DriveFile[]> {
+  // Markdown ファイルのみを取得するクエリを構築
+  const mimeTypeQuery = MARKDOWN_MIME_TYPES.map(
+    (type) => `mimeType='${type}'`
+  ).join(' or ');
+
+  // .md または .markdown 拡張子を含み、ゴミ箱にないファイル
+  const searchQuery = `(${mimeTypeQuery}) and (name contains '.md' or name contains '.markdown') and trashed=false`;
+
+  const response = await fetch(
+    `${DRIVE_API_BASE}/files?` +
+      new URLSearchParams({
+        q: searchQuery,
+        fields:
+          'files(id,name,mimeType,modifiedTime,size,iconLink,webViewLink,owners)',
+        pageSize: String(maxResults),
+        orderBy: 'modifiedTime desc',
+      }),
+    {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error(`Failed to list files: ${response.statusText}`);
+  }
+
+  const data: DriveFileListResponse = await response.json();
+
+  // .md または .markdown 拡張子でフィルタリング
+  return (data.files || []).filter(
+    (file) =>
+      file.name.toLowerCase().endsWith('.md') ||
+      file.name.toLowerCase().endsWith('.markdown')
+  );
+}
+
+/**
  * Markdown ファイルかどうかを判定
  */
 export function isMarkdownFile(file: DriveFile): boolean {

@@ -60,6 +60,9 @@ export const ja: Translations = {
     resultsCount: '{count}件',
     privacyTitle: 'プライバシーを守ります',
     privacyDesc: 'ファイルはGoogle Driveから直接取得し、ブラウザ内で表示します。サーバーには一切保存されません。',
+    recentTitle: '最近更新されたファイル',
+    recentHint: '更新日順で表示しています',
+    noRecentFiles: 'Markdownファイルが見つかりません',
   },
 
   // About Screen

@@ -9,6 +9,7 @@ import type { DriveFile } from '../types/googleDrive';
 import {
   fetchUserInfo,
   searchMarkdownFiles,
+  listRecentMarkdownFiles,
   fetchFileContent as fetchDriveFileContent,
 } from '../services/googleDrive';
 import { storage } from '../services/storage';
@@ -66,8 +67,10 @@ export interface UseGoogleAuthReturn {
   accessToken: string | null;
   error: string | null;
   results: DriveFile[];
+  recentFiles: DriveFile[];
   userInfo: UserInfo | null;
   search: (query: string) => Promise<void>;
+  loadRecentFiles: () => Promise<void>;
   authenticate: () => void;
   logout: () => void;
   fetchFileContent: (fileId: string, signal?: AbortSignal) => Promise<string | null>;
@@ -139,6 +142,7 @@ export function useGoogleAuth(): UseGoogleAuthReturn {
   const [isTokenRestored, setIsTokenRestored] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [results, setResults] = useState<DriveFile[]>([]);
+  const [recentFiles, setRecentFiles] = useState<DriveFile[]>([]);
   const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
   const [accessToken, setAccessToken] = useState<string | null>(null);
 
@@ -244,6 +248,7 @@ export function useGoogleAuth(): UseGoogleAuthReturn {
     setAccessToken(null);
     setIsAuthenticated(false);
     setResults([]);
+    setRecentFiles([]);
     setError(null);
     setUserInfo(null);
     clearStoredToken();
@@ -270,6 +275,26 @@ export function useGoogleAuth(): UseGoogleAuthReturn {
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Search failed');
       console.error('Search error:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [accessToken]);
+
+  // 最近のファイルを取得
+  const loadRecentFiles = useCallback(async () => {
+    if (!accessToken) {
+      return;
+    }
+
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const files = await listRecentMarkdownFiles(accessToken);
+      setRecentFiles(files);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load recent files');
+      console.error('Load recent files error:', err);
     } finally {
       setIsLoading(false);
     }
@@ -325,8 +350,10 @@ export function useGoogleAuth(): UseGoogleAuthReturn {
     accessToken,
     error,
     results,
+    recentFiles,
     userInfo,
     search,
+    loadRecentFiles,
     authenticate,
     logout,
     fetchFileContent,

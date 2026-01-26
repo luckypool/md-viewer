@@ -13,8 +13,10 @@ export interface UseGoogleAuthReturn {
   isAuthenticated: boolean;
   error: string | null;
   results: DriveFile[];
+  recentFiles: DriveFile[];
   userInfo: UserInfo | null;
   search: (query: string) => Promise<void>;
+  loadRecentFiles: () => Promise<void>;
   authenticate: () => void;
   logout: () => void;
   fetchFileContent: (fileId: string, signal?: AbortSignal) => Promise<string | null>;
