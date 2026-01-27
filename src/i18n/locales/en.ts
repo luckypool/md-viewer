@@ -122,6 +122,8 @@ export const en = {
     thirdPartyLicenses: 'Third-Party Licenses',
     thirdPartyDesc: 'This application uses the following open source libraries.',
     viewThirdPartyLicenses: 'View Third-Party Licenses',
+    viewTerms: 'Terms of Service',
+    viewPrivacy: 'Privacy Policy',
     footer: 'Built with Expo and React Native Web',
   },
 
@@ -178,6 +180,86 @@ export const en = {
     description: 'Install MD Viewer for quick access',
     instruction: 'Tap {shareIcon} then "Add to Home Screen"',
     dismiss: 'Not now',
+  },
+
+  // Legal
+  legal: {
+    terms: {
+      title: 'Terms of Service',
+      lastUpdated: 'Last updated: January 2025',
+      sections: {
+        acceptance: {
+          title: '1. Acceptance of Terms',
+          body: 'By accessing or using MD Viewer ("the Service"), you agree to be bound by these Terms of Service. If you do not agree to these terms, please do not use the Service.',
+        },
+        description: {
+          title: '2. Description of Service',
+          body: 'MD Viewer is a web-based Markdown file viewer that renders Markdown files stored in Google Drive or on your local device. The Service operates entirely within your browser and does not store any of your files or data on external servers.',
+        },
+        googleApi: {
+          title: '3. Google API Usage',
+          body: 'The Service uses the Google Drive API to access your Markdown files with read-only permission (drive.readonly scope). By using the Google Drive integration, you also agree to Google\'s Terms of Service. The Service only requests the minimum permissions necessary to function.',
+        },
+        intellectual: {
+          title: '4. Intellectual Property',
+          body: 'MD Viewer is open source software released under the MIT License. Your files and content remain your own property. The Service does not claim any ownership over content you view through it.',
+        },
+        disclaimer: {
+          title: '5. Disclaimer of Warranties',
+          body: 'The Service is provided "AS IS" and "AS AVAILABLE" without warranties of any kind, either express or implied. We do not guarantee that the Service will be uninterrupted, error-free, or free of harmful components. Use of the Service is at your own risk.',
+        },
+        changes: {
+          title: '6. Changes to Terms',
+          body: 'We reserve the right to modify these Terms of Service at any time. Changes will be reflected by updating the "Last updated" date. Continued use of the Service after changes constitutes acceptance of the modified terms.',
+        },
+        contact: {
+          title: '7. Contact',
+          body: 'For questions about these Terms of Service, please visit the project\'s GitHub repository.',
+        },
+      },
+    },
+    privacy: {
+      title: 'Privacy Policy',
+      lastUpdated: 'Last updated: January 2025',
+      sections: {
+        intro: {
+          title: '1. Introduction',
+          body: 'This Privacy Policy explains how MD Viewer ("the Service") handles your information. We are committed to protecting your privacy and being transparent about our data practices.',
+        },
+        collect: {
+          title: '2. Information We Store',
+          body: 'The following data is stored locally in your browser\'s localStorage:\n\n• Google OAuth authentication token (for Google Drive access)\n• Theme preference (light/dark)\n• Font settings (size and family)\n• Language preference (English/Japanese)\n• Recently viewed file history',
+        },
+        notCollect: {
+          title: '3. Information We Do Not Collect',
+          body: 'We do not collect, store, or transmit:\n\n• Contents of your Markdown files\n• Personal information or profile data\n• Analytics or usage tracking data\n• Cookies for tracking purposes\n• Any data to external servers',
+        },
+        google: {
+          title: '4. Google API Usage',
+          body: 'The Service uses the Google Drive API with read-only access (drive.readonly scope). This allows the Service to search for and read Markdown files from your Google Drive. File contents are fetched directly from Google Drive to your browser and are never sent to any other server.',
+        },
+        storage: {
+          title: '5. Data Storage',
+          body: 'All data is stored exclusively in your browser\'s localStorage. No data is transmitted to or stored on external servers. You can clear all stored data at any time by clearing your browser\'s local storage or signing out of the Service.',
+        },
+        thirdParty: {
+          title: '6. Third-Party Services',
+          body: 'The Service integrates with Google Drive API for file access. When you sign in with Google, your authentication is handled directly by Google\'s Identity Services. We recommend reviewing Google\'s Privacy Policy for information about how Google handles your data.',
+        },
+        children: {
+          title: '7. Children\'s Privacy',
+          body: 'The Service is not directed at children under the age of 13. We do not knowingly collect information from children under 13.',
+        },
+        changes: {
+          title: '8. Changes to This Policy',
+          body: 'We may update this Privacy Policy from time to time. Changes will be reflected by updating the "Last updated" date. Continued use of the Service after changes constitutes acceptance of the updated policy.',
+        },
+        contact: {
+          title: '9. Contact',
+          body: 'For questions about this Privacy Policy, please visit the project\'s GitHub repository.',
+        },
+      },
+    },
   },
 };
 
@@ -265,6 +347,8 @@ export type Translations = {
     thirdPartyLicenses: string;
     thirdPartyDesc: string;
     viewThirdPartyLicenses: string;
+    viewTerms: string;
+    viewPrivacy: string;
     footer: string;
   };
   common: {
@@ -309,5 +393,35 @@ export type Translations = {
     description: string;
     instruction: string;
     dismiss: string;
+  };
+  legal: {
+    terms: {
+      title: string;
+      lastUpdated: string;
+      sections: {
+        acceptance: { title: string; body: string };
+        description: { title: string; body: string };
+        googleApi: { title: string; body: string };
+        intellectual: { title: string; body: string };
+        disclaimer: { title: string; body: string };
+        changes: { title: string; body: string };
+        contact: { title: string; body: string };
+      };
+    };
+    privacy: {
+      title: string;
+      lastUpdated: string;
+      sections: {
+        intro: { title: string; body: string };
+        collect: { title: string; body: string };
+        notCollect: { title: string; body: string };
+        google: { title: string; body: string };
+        storage: { title: string; body: string };
+        thirdParty: { title: string; body: string };
+        children: { title: string; body: string };
+        changes: { title: string; body: string };
+        contact: { title: string; body: string };
+      };
+    };
   };
 };

@@ -197,6 +197,20 @@ export default function AboutScreen() {
               <Ionicons name="library-outline" size={18} color={colors.textSecondary} />
               <Text style={[styles.licenseButtonText, { color: colors.textSecondary }]}>{t.about.viewThirdPartyLicenses}</Text>
             </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.licenseButton, { backgroundColor: colors.bgTertiary, borderColor: colors.border }]}
+              onPress={() => router.push('/terms')}
+            >
+              <Ionicons name="shield-checkmark-outline" size={18} color={colors.textSecondary} />
+              <Text style={[styles.licenseButtonText, { color: colors.textSecondary }]}>{t.about.viewTerms}</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.licenseButton, { backgroundColor: colors.bgTertiary, borderColor: colors.border }]}
+              onPress={() => router.push('/privacy')}
+            >
+              <Ionicons name="lock-closed-outline" size={18} color={colors.textSecondary} />
+              <Text style={[styles.licenseButtonText, { color: colors.textSecondary }]}>{t.about.viewPrivacy}</Text>
+            </TouchableOpacity>
           </View>
         </View>
 
