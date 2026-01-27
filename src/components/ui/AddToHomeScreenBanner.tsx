@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Platform } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { spacing, borderRadius, fontSize, fontWeight } from '../../theme';
 import { useTheme } from '../../hooks/useTheme';
@@ -44,7 +44,7 @@ export function AddToHomeScreenBanner() {
           <Text style={[styles.instruction, { color: colors.textMuted }]}>
             {instructionParts[0]}
             <Ionicons
-              name={Platform.OS === 'web' ? 'share-outline' : 'share-outline'}
+              name="share-outline"
               size={14}
               color={colors.accent}
             />
