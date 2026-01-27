@@ -318,6 +318,17 @@ export default function HomeScreen() {
               <Text style={[styles.learnMoreText, { color: colors.accent }]}>{t.home.learnMore}</Text>
               <Ionicons name="arrow-forward" size={16} color={colors.accent} />
             </TouchableOpacity>
+
+            {/* Footer Legal Links */}
+            <View style={styles.footerLegal}>
+              <TouchableOpacity onPress={() => router.push('/privacy')}>
+                <Text style={[styles.footerLegalText, { color: colors.textMuted }]}>{t.about.viewPrivacy}</Text>
+              </TouchableOpacity>
+              <Text style={[styles.footerLegalSeparator, { color: colors.textMuted }]}>|</Text>
+              <TouchableOpacity onPress={() => router.push('/terms')}>
+                <Text style={[styles.footerLegalText, { color: colors.textMuted }]}>{t.about.viewTerms}</Text>
+              </TouchableOpacity>
+            </View>
           </View>
         ) : (
           <View style={styles.authenticatedContent}>
@@ -774,6 +785,19 @@ const styles = StyleSheet.create({
   },
   learnMoreText: {
     fontSize: fontSize.sm,
+  },
+  footerLegal: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: spacing.xl,
+    gap: spacing.sm,
+  },
+  footerLegalText: {
+    fontSize: fontSize.xs,
+  },
+  footerLegalSeparator: {
+    fontSize: fontSize.xs,
   },
 
   // Privacy Notice
