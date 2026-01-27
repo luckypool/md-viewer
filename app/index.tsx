@@ -392,23 +392,30 @@ export default function HomeScreen() {
       )}
 
       {/* Slide-in Menu */}
-      <Animated.View
-        pointerEvents={isMenuOpen ? 'auto' : 'none'}
-        style={[
-          styles.slideMenu,
-          {
-            backgroundColor: colors.bgSecondary,
-            transform: [{ translateX: menuAnimation }],
-          },
-        ]}
-      >
+      {isMenuOpen && (
+        <Animated.View
+          style={[
+            styles.slideMenu,
+            {
+              backgroundColor: colors.bgSecondary,
+              transform: [{ translateX: menuAnimation }],
+            },
+          ]}
+        >
         <SafeAreaView style={styles.slideMenuContent} edges={['top']}>
           {/* User Info */}
           {userInfo && (
             <View style={[styles.menuUserSection, { borderBottomColor: colors.border }]}>
-              <View style={[styles.menuAvatar, { backgroundColor: colors.bgTertiary }]}>
-                <Ionicons name="person" size={28} color={colors.textMuted} />
-              </View>
+              {userInfo.photoUrl ? (
+                <Image
+                  source={{ uri: userInfo.photoUrl }}
+                  style={styles.menuAvatarImage}
+                />
+              ) : (
+                <View style={[styles.menuAvatar, { backgroundColor: colors.bgTertiary }]}>
+                  <Ionicons name="person" size={28} color={colors.textMuted} />
+                </View>
+              )}
               <View style={styles.menuUserInfo}>
                 <Text style={[styles.menuUserName, { color: colors.textPrimary }]} numberOfLines={1}>
                   {userInfo.displayName}
@@ -584,6 +591,7 @@ export default function HomeScreen() {
           </ScrollView>
         </SafeAreaView>
       </Animated.View>
+      )}
 
       {/* Search FAB */}
       {isAuthenticated && (
@@ -888,6 +896,11 @@ const styles = StyleSheet.create({
     borderRadius: 24,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  menuAvatarImage: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
   },
   menuUserInfo: {
     flex: 1,
