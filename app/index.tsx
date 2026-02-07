@@ -21,7 +21,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, Link } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { spacing, borderRadius, fontSize, fontWeight, shadows } from '../src/theme';
-import { Button, LoadingSpinner, FAB } from '../src/components/ui';
+import { Button, LoadingSpinner, FAB, ThemeToggle, LanguageToggle } from '../src/components/ui';
 import { AddToHomeScreenBanner } from '../src/components/ui/AddToHomeScreenBanner';
 import { useGoogleAuth, useTheme, useLanguage } from '../src/hooks';
 import { useFilePicker } from '../src/hooks';
@@ -178,60 +178,9 @@ export default function HomeScreen() {
       {/* Landing Header - Settings bar for non-authenticated users */}
       {!isAuthenticated && (
         <View style={[styles.landingHeader, { borderBottomColor: colors.border, backgroundColor: colors.bgSecondary }]}>
-          <View style={styles.landingHeaderGroup}>
-            <TouchableOpacity
-              style={[
-                styles.landingHeaderOption,
-                { backgroundColor: themeMode === 'light' ? colors.accentMuted : colors.bgTertiary },
-              ]}
-              onPress={() => setTheme('light')}
-            >
-              <Ionicons name="sunny-outline" size={16} color={themeMode === 'light' ? colors.accent : colors.textMuted} />
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[
-                styles.landingHeaderOption,
-                { backgroundColor: themeMode === 'dark' ? colors.accentMuted : colors.bgTertiary },
-              ]}
-              onPress={() => setTheme('dark')}
-            >
-              <Ionicons name="moon-outline" size={16} color={themeMode === 'dark' ? colors.accent : colors.textMuted} />
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[
-                styles.landingHeaderOption,
-                { backgroundColor: themeMode === 'system' ? colors.accentMuted : colors.bgTertiary },
-              ]}
-              onPress={() => setTheme('system')}
-            >
-              <Ionicons name="phone-portrait-outline" size={16} color={themeMode === 'system' ? colors.accent : colors.textMuted} />
-            </TouchableOpacity>
-          </View>
-          <View style={styles.landingHeaderGroup}>
-            <TouchableOpacity
-              style={[
-                styles.landingHeaderOption,
-                styles.landingHeaderLangOption,
-                { backgroundColor: language === 'en' ? colors.accentMuted : colors.bgTertiary },
-              ]}
-              onPress={() => setLanguage('en')}
-            >
-              <Text style={[styles.landingHeaderLangText, { color: language === 'en' ? colors.accent : colors.textMuted }]}>
-                EN
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[
-                styles.landingHeaderOption,
-                styles.landingHeaderLangOption,
-                { backgroundColor: language === 'ja' ? colors.accentMuted : colors.bgTertiary },
-              ]}
-              onPress={() => setLanguage('ja')}
-            >
-              <Text style={[styles.landingHeaderLangText, { color: language === 'ja' ? colors.accent : colors.textMuted }]}>
-                JA
-              </Text>
-            </TouchableOpacity>
+          <View style={styles.headerActions}>
+            <LanguageToggle />
+            <ThemeToggle />
           </View>
         </View>
       )}
@@ -837,25 +786,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm,
     borderBottomWidth: 1,
-    gap: spacing.md,
   },
-  landingHeaderGroup: {
+  headerActions: {
     flexDirection: 'row',
-    gap: spacing.xs,
-  },
-  landingHeaderOption: {
-    width: 32,
-    height: 32,
-    borderRadius: borderRadius.md,
     alignItems: 'center',
-    justifyContent: 'center',
-  },
-  landingHeaderLangOption: {
-    width: 36,
-  },
-  landingHeaderLangText: {
-    fontSize: fontSize.xs,
-    fontWeight: fontWeight.semibold,
+    gap: spacing.sm,
   },
   menuButton: {
     width: 40,
