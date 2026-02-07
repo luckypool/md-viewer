@@ -22,32 +22,41 @@
   <!-- Content Area -->
   <rect x="20" y="120" width="460" height="360" rx="8" fill="#1a1d2e"/>
 
-  <!-- Markdown Content -->
-  <!-- H1 -->
-  <text x="40" y="160" font-family="system-ui, sans-serif" font-size="22" font-weight="700" fill="#e2e8f0"># Welcome to MarkDrive</text>
+  <!-- Rendered Markdown Content -->
+  <!-- H1 (no # mark, rendered heading) -->
+  <text x="40" y="160" font-family="system-ui, sans-serif" font-size="24" font-weight="700" fill="#e2e8f0">Welcome to MarkDrive</text>
+  <!-- H1 bottom border -->
+  <line x1="40" y1="170" x2="440" y2="170" stroke="#1e2038" stroke-width="2"/>
 
   <!-- Paragraph -->
-  <text x="40" y="196" font-family="system-ui, sans-serif" font-size="13" fill="#94a3b8">A beautiful Markdown viewer</text>
-  <text x="40" y="214" font-family="system-ui, sans-serif" font-size="13" fill="#94a3b8">for Google Drive files.</text>
+  <text x="40" y="200" font-family="system-ui, sans-serif" font-size="14" fill="#94a3b8">A beautiful Markdown viewer</text>
+  <text x="40" y="220" font-family="system-ui, sans-serif" font-size="14" fill="#94a3b8">for Google Drive files.</text>
 
-  <!-- H2 -->
-  <text x="40" y="254" font-family="system-ui, sans-serif" font-size="17" font-weight="600" fill="#e2e8f0">## Features</text>
+  <!-- H2 (no ## mark, rendered heading) -->
+  <text x="40" y="260" font-family="system-ui, sans-serif" font-size="19" font-weight="600" fill="#e2e8f0">Features</text>
+  <!-- H2 bottom border -->
+  <line x1="40" y1="268" x2="440" y2="268" stroke="#1e2038" stroke-width="1"/>
 
-  <!-- List items -->
-  <circle cx="50" cy="285" r="3" fill="#6366f1"/>
-  <text x="65" y="290" font-family="system-ui, sans-serif" font-size="13" fill="#94a3b8">Google Drive integration</text>
+  <!-- List items with disc bullets -->
+  <circle cx="50" cy="295" r="3" fill="#e2e8f0"/>
+  <text x="62" y="300" font-family="system-ui, sans-serif" font-size="14" fill="#94a3b8">Google Drive integration</text>
 
-  <circle cx="50" cy="315" r="3" fill="#6366f1"/>
-  <text x="65" y="320" font-family="system-ui, sans-serif" font-size="13" fill="#94a3b8">Beautiful syntax highlighting</text>
+  <circle cx="50" cy="323" r="3" fill="#e2e8f0"/>
+  <text x="62" y="328" font-family="system-ui, sans-serif" font-size="14" fill="#94a3b8">Beautiful syntax highlighting</text>
 
-  <circle cx="50" cy="345" r="3" fill="#6366f1"/>
-  <text x="65" y="350" font-family="system-ui, sans-serif" font-size="13" fill="#94a3b8">Mermaid diagram support</text>
+  <circle cx="50" cy="351" r="3" fill="#e2e8f0"/>
+  <text x="62" y="356" font-family="system-ui, sans-serif" font-size="14" fill="#94a3b8">Mermaid diagram support</text>
 
-  <!-- Code Block -->
-  <rect x="40" y="375" width="420" height="80" rx="6" fill="#161b22"/>
-  <text x="55" y="400" font-family="monospace" font-size="12" fill="#8b949e">```javascript</text>
-  <text x="55" y="420" font-family="monospace" font-size="12" fill="#e6edf3">const viewer = new MDViewer();</text>
-  <text x="55" y="440" font-family="monospace" font-size="12" fill="#e6edf3">viewer.render(markdown);</text>
+  <!-- Code Block with language label -->
+  <rect x="40" y="376" width="420" height="90" rx="6" fill="#161b22" stroke="#30363d" stroke-width="1"/>
+  <!-- Language label bar -->
+  <rect x="40" y="376" width="420" height="22" rx="6" fill="#161b22"/>
+  <rect x="40" y="392" width="420" height="6" fill="#161b22"/>
+  <line x1="40" y1="398" x2="460" y2="398" stroke="#30363d" stroke-width="1"/>
+  <text x="52" y="392" font-family="monospace" font-size="11" fill="#8b949e">javascript</text>
+  <!-- Code content with syntax highlighting -->
+  <text x="52" y="418" font-family="monospace" font-size="12"><tspan fill="#ff7b72">const</tspan><tspan fill="#e6edf3"> viewer = </tspan><tspan fill="#ff7b72">new</tspan><tspan fill="#e6edf3"> </tspan><tspan fill="#d2a8ff">MDViewer</tspan><tspan fill="#e6edf3">();</tspan></text>
+  <text x="52" y="438" font-family="monospace" font-size="12"><tspan fill="#e6edf3">viewer.</tspan><tspan fill="#d2a8ff">render</tspan><tspan fill="#e6edf3">(markdown);</tspan></text>
 
   <!-- Decorative gradient overlay -->
   <defs>

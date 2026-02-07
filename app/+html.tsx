@@ -71,4 +71,12 @@ body {
   body {
     background-color: #0a0b14;
   }
+}
+@keyframes crossfade-raw {
+  0%   { opacity: 1; }
+  12%  { opacity: 1; }
+  25%  { opacity: 0; }
+  62%  { opacity: 0; }
+  75%  { opacity: 1; }
+  100% { opacity: 1; }
 }`;
