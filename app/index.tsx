@@ -35,9 +35,14 @@ const MENU_WIDTH = Math.min(320, SCREEN_WIDTH * 0.85);
 export default function HomeScreen() {
   const { colors, mode: themeMode, resolvedMode, setTheme } = useTheme();
   const { t, language, setLanguage } = useLanguage();
-  const { width: _windowWidth } = useWindowDimensions();
-  const SSR_DEFAULT_WIDTH = 1024;
-  const windowWidth = _windowWidth || (Platform.OS === 'web' && typeof window !== 'undefined' ? window.innerWidth : SSR_DEFAULT_WIDTH);
+  const [windowWidth, setWindowWidth] = useState(0);
+  useEffect(() => {
+    if (Platform.OS !== 'web' || typeof window === 'undefined') return;
+    setWindowWidth(window.innerWidth);
+    const handleResize = () => setWindowWidth(window.innerWidth);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
   const isDesktop = windowWidth >= 768;
   const { settings: fontSettings, setFontSize, setFontFamily } = useFontSettings();
   const {
@@ -278,14 +283,22 @@ export default function HomeScreen() {
               </View>
 
               {/* Right: Preview image */}
-              <View style={styles.heroRight}>
-                <View style={[styles.previewContainer, { borderColor: colors.borderLight, ...shadows.md }]}>
+              <View style={isDesktop ? styles.heroRight : styles.heroRightMobile}>
+                <View style={isDesktop ? [styles.previewContainer, { borderColor: colors.borderLight, ...shadows.md }] : styles.previewContainerMobile}>
                   {Platform.OS === 'web' && (
-                    <img
-                      src={resolvedMode === 'dark' ? '/app-preview.svg' : '/app-preview-light.svg'}
-                      alt="MarkDrive Preview"
-                      style={{ width: '100%', height: 'auto', borderRadius: 8 }}
-                    />
+                    isDesktop ? (
+                      <img
+                        src={resolvedMode === 'dark' ? '/app-preview.svg' : '/app-preview-light.svg'}
+                        alt="MarkDrive Preview"
+                        style={{ width: '100%', height: 'auto', borderRadius: 8 }}
+                      />
+                    ) : (
+                      <img
+                        src={resolvedMode === 'dark' ? '/app-preview-mobile.svg' : '/app-preview-mobile-light.svg'}
+                        alt="MarkDrive Mobile Preview"
+                        style={{ width: '100%', height: 'auto' }}
+                      />
+                    )
                   )}
                 </View>
               </View>
@@ -872,6 +885,13 @@ const styles = StyleSheet.create({
   },
   heroRight: {
     flex: 1,
+    width: '100%',
+  },
+  heroRightMobile: {
+    width: '100%',
+    marginTop: spacing.xl,
+  },
+  previewContainerMobile: {
     width: '100%',
   },
   heroLogoRow: {
