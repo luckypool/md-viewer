@@ -34,8 +34,7 @@ export function Tooltip({ label, children }: TooltipProps) {
               content: attr(data-tooltip);
               position: absolute;
               top: calc(100% + 6px);
-              left: 50%;
-              transform: translateX(-50%);
+              right: 0;
               padding: 4px 10px;
               border-radius: 6px;
               font-size: 12px;
