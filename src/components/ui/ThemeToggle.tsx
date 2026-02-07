@@ -4,10 +4,10 @@
  */
 
 import React from 'react';
-import { TouchableOpacity, StyleSheet } from 'react-native';
+import { TouchableOpacity, StyleSheet, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../../hooks/useTheme';
-import { spacing } from '../../theme';
+import { borderRadius, spacing } from '../../theme';
 import type { ThemeMode } from '../../contexts/ThemeContext';
 
 const cycle: ThemeMode[] = ['light', 'dark', 'system'];
@@ -18,10 +18,10 @@ const iconMap: Record<ThemeMode, keyof typeof Ionicons.glyphMap> = {
   system: 'phone-portrait-outline',
 };
 
-const labelMap: Record<ThemeMode, string> = {
-  light: 'Switch to dark mode',
-  dark: 'Switch to system mode',
-  system: 'Switch to light mode',
+const tooltipMap: Record<ThemeMode, string> = {
+  light: 'Theme: Light — Click for Dark',
+  dark: 'Theme: Dark — Click for System',
+  system: 'Theme: System — Click for Light',
 };
 
 export function ThemeToggle() {
@@ -33,18 +33,21 @@ export function ThemeToggle() {
     setTheme(cycle[nextIndex]);
   };
 
+  const webProps = Platform.OS === 'web' ? { title: tooltipMap[mode] } : {};
+
   return (
     <TouchableOpacity
-      style={styles.button}
+      style={[styles.button, { backgroundColor: colors.bgTertiary, borderColor: colors.border }]}
       onPress={handlePress}
       activeOpacity={0.7}
-      accessibilityLabel={labelMap[mode]}
+      accessibilityLabel={tooltipMap[mode]}
       accessibilityRole="button"
+      {...webProps}
     >
       <Ionicons
         name={iconMap[mode]}
-        size={22}
-        color={colors.textSecondary}
+        size={20}
+        color={colors.accent}
       />
     </TouchableOpacity>
   );
@@ -52,10 +55,11 @@ export function ThemeToggle() {
 
 const styles = StyleSheet.create({
   button: {
-    width: 40,
-    height: 40,
+    width: 36,
+    height: 36,
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: spacing.sm,
+    borderRadius: borderRadius.sm,
+    borderWidth: 1,
   },
 });
