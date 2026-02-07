@@ -7,7 +7,7 @@ import React from 'react';
 import { TouchableOpacity, StyleSheet, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../../hooks/useTheme';
-import { borderRadius, spacing } from '../../theme';
+import { borderRadius } from '../../theme';
 import type { ThemeMode } from '../../contexts/ThemeContext';
 
 const cycle: ThemeMode[] = ['light', 'dark', 'system'];
@@ -33,16 +33,13 @@ export function ThemeToggle() {
     setTheme(cycle[nextIndex]);
   };
 
-  const webProps = Platform.OS === 'web' ? { title: tooltipMap[mode] } : {};
-
-  return (
+  const button = (
     <TouchableOpacity
       style={[styles.button, { backgroundColor: colors.bgTertiary, borderColor: colors.border }]}
       onPress={handlePress}
       activeOpacity={0.7}
       accessibilityLabel={tooltipMap[mode]}
       accessibilityRole="button"
-      {...webProps}
     >
       <Ionicons
         name={iconMap[mode]}
@@ -51,6 +48,12 @@ export function ThemeToggle() {
       />
     </TouchableOpacity>
   );
+
+  if (Platform.OS === 'web') {
+    return <div title={tooltipMap[mode]}>{button}</div>;
+  }
+
+  return button;
 }
 
 const styles = StyleSheet.create({

@@ -16,22 +16,25 @@ export function LanguageToggle() {
     ? 'Language: English — Click for 日本語'
     : 'Language: 日本語 — Click for English';
 
-  const webProps = Platform.OS === 'web' ? { title: tooltip } : {};
-
-  return (
+  const button = (
     <TouchableOpacity
       onPress={toggleLanguage}
       style={[styles.button, { backgroundColor: colors.bgTertiary, borderColor: colors.border }]}
       activeOpacity={0.7}
       accessibilityLabel={tooltip}
       accessibilityRole="button"
-      {...webProps}
     >
       <Text style={[styles.text, { color: colors.accent }]}>
         {language === 'en' ? 'EN' : 'JA'}
       </Text>
     </TouchableOpacity>
   );
+
+  if (Platform.OS === 'web') {
+    return <div title={tooltip}>{button}</div>;
+  }
+
+  return button;
 }
 
 const styles = StyleSheet.create({
