@@ -15,46 +15,51 @@
   <!-- Content Area -->
   <rect x="12" y="92" width="296" height="536" rx="8" fill="#1a1d2e"/>
 
-  <!-- Markdown Content -->
+  <!-- Rendered Markdown Content -->
   <!-- H1 -->
-  <text x="24" y="124" font-family="system-ui, sans-serif" font-size="20" font-weight="700" fill="#e2e8f0"># Welcome to MarkDrive</text>
+  <text x="24" y="126" font-family="system-ui, sans-serif" font-size="22" font-weight="700" fill="#e2e8f0">Welcome to MarkDrive</text>
+  <line x1="24" y1="134" x2="296" y2="134" stroke="#1e2038" stroke-width="2"/>
 
   <!-- Paragraph -->
-  <text x="24" y="156" font-family="system-ui, sans-serif" font-size="12" fill="#94a3b8">A beautiful Markdown viewer</text>
-  <text x="24" y="172" font-family="system-ui, sans-serif" font-size="12" fill="#94a3b8">for Google Drive files.</text>
+  <text x="24" y="162" font-family="system-ui, sans-serif" font-size="13" fill="#94a3b8">A beautiful Markdown viewer</text>
+  <text x="24" y="180" font-family="system-ui, sans-serif" font-size="13" fill="#94a3b8">for Google Drive files.</text>
 
   <!-- H2 -->
-  <text x="24" y="210" font-family="system-ui, sans-serif" font-size="16" font-weight="600" fill="#e2e8f0">## Features</text>
+  <text x="24" y="218" font-family="system-ui, sans-serif" font-size="17" font-weight="600" fill="#e2e8f0">Features</text>
+  <line x1="24" y1="226" x2="296" y2="226" stroke="#1e2038" stroke-width="1"/>
 
   <!-- List items -->
-  <circle cx="32" cy="240" r="3" fill="#6366f1"/>
-  <text x="44" y="244" font-family="system-ui, sans-serif" font-size="12" fill="#94a3b8">Google Drive integration</text>
+  <circle cx="32" cy="250" r="3" fill="#e2e8f0"/>
+  <text x="44" y="254" font-family="system-ui, sans-serif" font-size="13" fill="#94a3b8">Google Drive integration</text>
 
-  <circle cx="32" cy="266" r="3" fill="#6366f1"/>
-  <text x="44" y="270" font-family="system-ui, sans-serif" font-size="12" fill="#94a3b8">Syntax highlighting</text>
+  <circle cx="32" cy="278" r="3" fill="#e2e8f0"/>
+  <text x="44" y="282" font-family="system-ui, sans-serif" font-size="13" fill="#94a3b8">Syntax highlighting</text>
 
-  <circle cx="32" cy="292" r="3" fill="#6366f1"/>
-  <text x="44" y="296" font-family="system-ui, sans-serif" font-size="12" fill="#94a3b8">Mermaid diagram support</text>
+  <circle cx="32" cy="306" r="3" fill="#e2e8f0"/>
+  <text x="44" y="310" font-family="system-ui, sans-serif" font-size="13" fill="#94a3b8">Mermaid diagram support</text>
 
-  <!-- Code Block -->
-  <rect x="24" y="316" width="272" height="72" rx="6" fill="#161b22"/>
-  <text x="36" y="338" font-family="monospace" font-size="11" fill="#8b949e">```javascript</text>
-  <text x="36" y="356" font-family="monospace" font-size="11" fill="#e6edf3">const viewer = new MDViewer();</text>
-  <text x="36" y="374" font-family="monospace" font-size="11" fill="#e6edf3">viewer.render(markdown);</text>
+  <!-- Code Block with language label -->
+  <rect x="24" y="332" width="272" height="80" rx="6" fill="#161b22" stroke="#30363d" stroke-width="1"/>
+  <rect x="24" y="332" width="272" height="20" rx="6" fill="#161b22"/>
+  <rect x="24" y="346" width="272" height="6" fill="#161b22"/>
+  <line x1="24" y1="352" x2="296" y2="352" stroke="#30363d" stroke-width="1"/>
+  <text x="34" y="347" font-family="monospace" font-size="10" fill="#8b949e">javascript</text>
+  <text x="34" y="370" font-family="monospace" font-size="11"><tspan fill="#ff7b72">const</tspan><tspan fill="#e6edf3"> viewer = </tspan><tspan fill="#ff7b72">new</tspan><tspan fill="#e6edf3"> </tspan><tspan fill="#d2a8ff">MDViewer</tspan><tspan fill="#e6edf3">();</tspan></text>
+  <text x="34" y="388" font-family="monospace" font-size="11"><tspan fill="#e6edf3">viewer.</tspan><tspan fill="#d2a8ff">render</tspan><tspan fill="#e6edf3">(markdown);</tspan></text>
 
   <!-- Table -->
-  <rect x="24" y="408" width="272" height="24" rx="4" fill="#111320"/>
-  <text x="36" y="424" font-family="system-ui, sans-serif" font-size="11" font-weight="600" fill="#e2e8f0">Feature</text>
-  <text x="180" y="424" font-family="system-ui, sans-serif" font-size="11" font-weight="600" fill="#e2e8f0">Status</text>
-  <line x1="24" y1="432" x2="296" y2="432" stroke="#1e2038" stroke-width="1"/>
-  <text x="36" y="452" font-family="system-ui, sans-serif" font-size="11" fill="#94a3b8">GFM</text>
-  <text x="180" y="452" font-family="system-ui, sans-serif" font-size="11" fill="#10b981">Ready</text>
-  <line x1="24" y1="460" x2="296" y2="460" stroke="#1e2038" stroke-width="1"/>
-  <text x="36" y="480" font-family="system-ui, sans-serif" font-size="11" fill="#94a3b8">Mermaid</text>
-  <text x="180" y="480" font-family="system-ui, sans-serif" font-size="11" fill="#10b981">Ready</text>
-  <line x1="24" y1="488" x2="296" y2="488" stroke="#1e2038" stroke-width="1"/>
-  <text x="36" y="508" font-family="system-ui, sans-serif" font-size="11" fill="#94a3b8">KaTeX</text>
-  <text x="180" y="508" font-family="system-ui, sans-serif" font-size="11" fill="#10b981">Ready</text>
+  <rect x="24" y="430" width="272" height="24" rx="4" fill="#111320"/>
+  <text x="36" y="446" font-family="system-ui, sans-serif" font-size="11" font-weight="600" fill="#e2e8f0">Feature</text>
+  <text x="180" y="446" font-family="system-ui, sans-serif" font-size="11" font-weight="600" fill="#e2e8f0">Status</text>
+  <line x1="24" y1="454" x2="296" y2="454" stroke="#1e2038" stroke-width="1"/>
+  <text x="36" y="474" font-family="system-ui, sans-serif" font-size="11" fill="#94a3b8">GFM</text>
+  <text x="180" y="474" font-family="system-ui, sans-serif" font-size="11" fill="#94a3b8">Ready</text>
+  <line x1="24" y1="482" x2="296" y2="482" stroke="#1e2038" stroke-width="1"/>
+  <text x="36" y="502" font-family="system-ui, sans-serif" font-size="11" fill="#94a3b8">Mermaid</text>
+  <text x="180" y="502" font-family="system-ui, sans-serif" font-size="11" fill="#94a3b8">Ready</text>
+  <line x1="24" y1="510" x2="296" y2="510" stroke="#1e2038" stroke-width="1"/>
+  <text x="36" y="530" font-family="system-ui, sans-serif" font-size="11" fill="#94a3b8">KaTeX</text>
+  <text x="180" y="530" font-family="system-ui, sans-serif" font-size="11" fill="#94a3b8">Ready</text>
 
   <!-- Decorative gradient overlay -->
   <defs>
@@ -64,6 +69,9 @@
     </linearGradient>
   </defs>
   <rect x="0" y="540" width="320" height="100" rx="36" fill="url(#fadeMobileDark)"/>
+
+  <!-- Phone Frame border (re-draw on top of gradient) -->
+  <rect x="0" y="0" width="320" height="640" rx="36" fill="none" stroke="#1e2038" stroke-width="2"/>
 
   <!-- Home Indicator -->
   <rect x="110" y="618" width="100" height="4" rx="2" fill="#64748b"/>

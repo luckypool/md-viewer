@@ -282,22 +282,55 @@ export default function HomeScreen() {
                 </Button>
               </View>
 
-              {/* Right: Preview image */}
+              {/* Right: Preview image with crossfade animation */}
               <View style={isDesktop ? styles.heroRight : styles.heroRightMobile}>
                 <View style={isDesktop ? [styles.previewContainer, { borderColor: colors.borderLight, ...shadows.md }] : styles.previewContainerMobile}>
                   {Platform.OS === 'web' && (
                     isDesktop ? (
-                      <img
-                        src={resolvedMode === 'dark' ? '/app-preview.svg' : '/app-preview-light.svg'}
-                        alt="MarkDrive Preview"
-                        style={{ width: '100%', height: 'auto', borderRadius: 8 }}
-                      />
+                      <div style={{ position: 'relative', width: '100%' }}>
+                        {/* Rendered preview (base layer) */}
+                        <img
+                          src={resolvedMode === 'dark' ? '/app-preview.svg' : '/app-preview-light.svg'}
+                          alt="MarkDrive Preview"
+                          style={{ width: '100%', height: 'auto', borderRadius: 8, display: 'block' }}
+                        />
+                        {/* Raw markdown (overlay with crossfade) */}
+                        <img
+                          src={resolvedMode === 'dark' ? '/app-preview-raw.svg' : '/app-preview-raw-light.svg'}
+                          alt="MarkDrive Raw Markdown"
+                          style={{
+                            position: 'absolute',
+                            top: 0,
+                            left: 0,
+                            width: '100%',
+                            height: 'auto',
+                            borderRadius: 8,
+                            animation: 'crossfade-raw 8s ease-in-out infinite',
+                          }}
+                        />
+                      </div>
                     ) : (
-                      <img
-                        src={resolvedMode === 'dark' ? '/app-preview-mobile.svg' : '/app-preview-mobile-light.svg'}
-                        alt="MarkDrive Mobile Preview"
-                        style={{ width: '100%', height: 'auto' }}
-                      />
+                      <div style={{ position: 'relative', width: '100%' }}>
+                        {/* Rendered preview (base layer) */}
+                        <img
+                          src={resolvedMode === 'dark' ? '/app-preview-mobile.svg' : '/app-preview-mobile-light.svg'}
+                          alt="MarkDrive Mobile Preview"
+                          style={{ width: '100%', height: 'auto', display: 'block' }}
+                        />
+                        {/* Raw markdown (overlay with crossfade) */}
+                        <img
+                          src={resolvedMode === 'dark' ? '/app-preview-mobile-raw.svg' : '/app-preview-mobile-raw-light.svg'}
+                          alt="MarkDrive Raw Markdown"
+                          style={{
+                            position: 'absolute',
+                            top: 0,
+                            left: 0,
+                            width: '100%',
+                            height: 'auto',
+                            animation: 'crossfade-raw 8s ease-in-out infinite',
+                          }}
+                        />
+                      </div>
                     )
                   )}
                 </View>
