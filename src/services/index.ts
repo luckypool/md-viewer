@@ -14,5 +14,4 @@ export {
   searchMarkdownFiles,
   fetchFileContent,
   fetchFileInfo,
-  updateFileContent,
 } from './googleDrive';
