@@ -4,10 +4,11 @@
  */
 
 import React from 'react';
-import { TouchableOpacity, StyleSheet, Platform } from 'react-native';
+import { TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../../hooks/useTheme';
 import { borderRadius } from '../../theme';
+import { Tooltip } from './Tooltip';
 import type { ThemeMode } from '../../contexts/ThemeContext';
 
 const cycle: ThemeMode[] = ['light', 'dark', 'system'];
@@ -33,27 +34,23 @@ export function ThemeToggle() {
     setTheme(cycle[nextIndex]);
   };
 
-  const button = (
-    <TouchableOpacity
-      style={[styles.button, { backgroundColor: colors.bgTertiary, borderColor: colors.border }]}
-      onPress={handlePress}
-      activeOpacity={0.7}
-      accessibilityLabel={tooltipMap[mode]}
-      accessibilityRole="button"
-    >
-      <Ionicons
-        name={iconMap[mode]}
-        size={20}
-        color={colors.accent}
-      />
-    </TouchableOpacity>
+  return (
+    <Tooltip label={tooltipMap[mode]}>
+      <TouchableOpacity
+        style={[styles.button, { backgroundColor: colors.bgTertiary, borderColor: colors.border }]}
+        onPress={handlePress}
+        activeOpacity={0.7}
+        accessibilityLabel={tooltipMap[mode]}
+        accessibilityRole="button"
+      >
+        <Ionicons
+          name={iconMap[mode]}
+          size={20}
+          color={colors.accent}
+        />
+      </TouchableOpacity>
+    </Tooltip>
   );
-
-  if (Platform.OS === 'web') {
-    return <div title={tooltipMap[mode]}>{button}</div>;
-  }
-
-  return button;
 }
 
 const styles = StyleSheet.create({
